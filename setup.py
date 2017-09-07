@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 
 setup(
-    name='youtvbot',
+    name='ytvbot',
     version='0.1',
     url='https://github.com/dr1s',
     author='drs',

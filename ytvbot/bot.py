@@ -31,7 +31,7 @@ def download(links, output_dir=None):
             try:
                 downloader.resume()
             except HTTPError:
-                pass
+                logger.debug("Can't resume. File already finished downloading")
         else:
             logger.info('Downloading: %s' % item)
             downloader.download()
@@ -81,7 +81,7 @@ def setup_dir():
     cache_file = os.path.join(ytvbot_dir, 'cache')
     if not os.path.exists(cache_file):
         with open(cache_file, 'a'):
-            os.utime(cache_file)
+            os.utime(cache_filen, None)
 
 def main():
 
@@ -164,7 +164,8 @@ def main():
     if download_files:
         download(download_links, output_dir)
 
-logger = logging.getLogger('youtv')
+
+logger = logging.getLogger('ytvbot')
 logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
