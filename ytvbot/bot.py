@@ -15,6 +15,8 @@ from urllib2 import HTTPError
 email = None
 password = None
 
+ytvbot_dir = None
+
 def download(links, output_dir=None):
 
     for item in links:
@@ -62,10 +64,24 @@ def usage():
     print(" -u | --user [email]: email adress of the account")
     print(" -p | --password [password]: password ouf the account ")
     print(" -o | --output [output_dir]: output directory")
-    print(" -h | --help : shows this message")
-    print(" -n | --no-download : Don't download anything")
-    print(" -l | --links [output_file] : Save links in this file")
+    print(" -h | --help: shows this message")
+    print(" -n | --no-download: Don't download anything")
+    print(" -l | --links [output_file]: Save links in this file")
+    print(" -f | --file [input_file]: File with links to download")
 
+def setup_dir():
+    global ytvbot_dir
+
+    if not ytvbot_dir:
+        home = os.path.expanduser("~")
+        ytvbot_dir = os.path.join(home, '.ytvbot')
+        if not os.path.isdir(ytvbot_dir):
+            os.mkdir(ytvbot_dir)
+
+    cache_file = os.path.join(ytvbot_dir, 'cache')
+    if not os.path.exists(cache_file):
+        with open(cache_file, 'a'):
+            os.utime(cache_file)
 
 def main():
 
@@ -98,7 +114,7 @@ def main():
             output_dir = os.path.abspath(a)
         elif o in ("-l", "--links"):
             link_output = os.path.abspath(a)
-        elif o in ("-d", "--download-links"):
+        elif o in ("-f", "--file"):
             download_links_file = os.path.abspath(a)
         elif o in ("-n", "--no-download"):
             download_files = False
@@ -108,9 +124,13 @@ def main():
         elif o in ("-p", "--password"):
             global password
             password = a
+        elif o in ("-c", "--config-dir"):
+            global ytvbot_dir
+            ytvbot_dir = a
         else:
             assert False, "unhandled option"
 
+    setup_dir()
     download_links = None
     if not download_links_file:
         try:
@@ -128,6 +148,15 @@ def main():
         with open(download_links_file) as f:
             download_links = f.readlines()
         download_links = [x.strip() for x in download_links]
+
+    for link in download_links:
+        cache_file = os.path.join(ytvbot_dir, 'cache')
+        if link not in open(cache_file).read():
+            logger.debug('Link not found in cache, adding: %s' % link)
+            with open(cache_file, "a") as f:
+                f.write(link)
+        else:
+            logger.debug('Link already found in cache %s' % link)
 
     if link_output and not download_links_file:
         write_links_to_file(download_links, link_output)
