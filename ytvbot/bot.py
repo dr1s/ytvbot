@@ -99,9 +99,9 @@ def main():
     download_files = True
 
     try:
-        long = ["help", "output=", "links=", "download-links=", "user=",
-            "password="]
-        opts, args = getopt.getopt(sys.argv[1:], "hno:l:d:u:p:", long )
+        long = ["help", "output=", "links=", "file=", "user=", "password=",
+                "config-dir=", "no-download"]
+        opts, args = getopt.getopt(sys.argv[1:], "hno:l:f:u:p:c:", long )
     except getopt.GetoptError as err:
         print str(err)
         usage()
