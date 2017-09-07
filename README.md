@@ -8,10 +8,12 @@ Download recordings form youtv.de
 * psutil
 * geckodriver (https://github.com/mozilla/geckodriver/releases)
 * firefox
+* Xvfb
+* xauth
 
 ## Install
 * Install geckodriver from https://github.com/mozilla/geckodriver/releases
-* `sudo apt install firefox xauth`
+* `sudo apt install firefox xauth Xvfb`
 * `git clone ytvbot`
 * `cd ytvbot`
 * `python2 setup.py install`
