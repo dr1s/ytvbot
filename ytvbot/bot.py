@@ -85,14 +85,6 @@ def setup_dir():
 
 def main():
 
-    print("_____.___.           _______________   _______.           __   ")
-    print("\__  |   | ____  __ _\__    ___/\   \ /   /\_ |__   _____/  |_ ")
-    print(" /   |   |/  _ \|  |  \|    |    \   Y   /  | __ \ /  _ \   __\\")
-    print(" \____   (  <_> )  |  /|    |     \     /   | \_\ (  <_> )  |  ")
-    print(" / ______|\____/|____/ |____|      \___/    |___  /\____/|__|  ")
-    print(" \/                                             \/             ")
-    print(" ")
-
     output_dir = None
     link_output = None
     download_links_file = None
@@ -154,7 +146,7 @@ def main():
         if link not in open(cache_file).read():
             logger.debug('Link not found in cache, adding: %s' % link)
             with open(cache_file, "a") as f:
-                f.write(link)
+                f.write("%s\n" % link)
         else:
             logger.debug('Link already found in cache %s' % link)
 
