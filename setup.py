@@ -10,7 +10,7 @@ setup(
     description='Download latest recordings from youtv',
     install_requires=["selenium", "pyvirtualdisplay", "psutil", "fileDownloader.py"],
     dependency_links = [
-        "git+ssh://git@github.com/dr1s/fileDownloader.git@master#egg=fileDownloader.py-0.4.0"
+        "git+https://github.com/dr1s/fileDownloader.git@master#egg=fileDownloader.py-0.4.0"
 
     ],
     packages=find_packages(),
