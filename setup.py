@@ -8,7 +8,11 @@ setup(
     author='drs',
     license='MIT',
     description='Download latest recordings from youtv',
-    install_requires=["selenium", "pyvirtualdisplay", "fileDownloader.py", "psutil"],
+    install_requires=["selenium", "pyvirtualdisplay", "psutil", "fileDownloader.py"],
+    dependency_links = [
+        "git+ssh://git@github.com/dr1s/fileDownloader.git@master#egg=fileDownloader.py-0.4.0"
+
+    ],
     packages=find_packages(),
     include_package_data = True,
     entry_points={'console_scripts': ['ytvbot=ytvbot.bot:main']},

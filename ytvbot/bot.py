@@ -25,7 +25,7 @@ def download(links, output_dir=None):
         if output_dir:
             output_file = os.path.join(output_dir, filename)
 
-        downloader = fileDownloader.DownloadFile(item, output_file)
+        downloader = fileDownloader.DownloadFile(item, output_file, progress_bar=True)
         if os.path.isfile(filename):
             logger.info('Resuming download: %s' % item)
             try:
