@@ -22,19 +22,25 @@ def download(links, output_dir=None):
     for item in links:
         filename = item.split('/')[len(item.split('/'))-1]
         output_file = filename
+        tmp_file = filename + ".download"
         if output_dir:
             output_file = os.path.join(output_dir, filename)
 
         downloader = fileDownloader.DownloadFile(item, output_file, progress_bar=True)
-        if os.path.isfile(filename):
-            logger.info('Resuming download: %s' % item)
-            try:
-                downloader.resume()
-            except HTTPError:
-                logger.debug("Can't resume. File already finished downloading")
+        if os.path.isfile(output_file):
+            if (os.path.isfile(tmp_file)):
+                logger.info('Resuming download: %s' % item)
+                try:
+                    downloader.resume()
+                    os.remove(tmp_file)
+                except HTTPError:
+                    logger.debug("Can't resume. File already finished downloading")
         else:
             logger.info('Downloading: %s' % item)
+            with open(tmp_file, 'w'):
+                    os.utime(tmp_file, None)
             downloader.download()
+            os.remove(tmp_file)
 
 def select_download_links(recording_links):
 
