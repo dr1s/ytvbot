@@ -4,6 +4,8 @@ import sys
 import logging
 import platform
 import psutil
+import pickle
+import os
 
 from pyvirtualdisplay import Display
 
@@ -42,34 +44,42 @@ class Scraper:
             self.logger.info('MacOS or Windows detected, can\'t start headless mode')
 
         self.browser = webdriver.Firefox()
-        logged_in = False
+        self.logged_in = False
 
         self.timeout = timeout
 
 
 
     def login(self, email, password):
+        cookies_file = "cookies.pkl"
 
         self.logger.info('Loggin in')
-        self.browser.get('https://www.youtv.de/login')
+        self.browser.get('https://www.youtv.de/')
 
-        login_email = self.browser.find_element_by_id("session_email")
-        login_email.send_keys(email)
-        login_password = self.browser.find_element_by_id('session_password')
-        login_password.send_keys(password)
+        if os.path.isfile(cookies_file):
+            self.logger.debug("cookies found, adding to current browser session")
+            cookies = pickle.load(open(cookies_file, "rb"))
+            for cookie in cookies:
+                self.browser.add_cookie(cookie)
+            self.browser.get('https://www.youtv.de/')
 
-        self.browser.find_element_by_xpath("//input[@value='Anmelden']").click()
+        if not os.path.isfile(cookies_file):
+            login_email = self.browser.find_element_by_id("session_email")
+            login_email.send_keys(email)
+            login_password = self.browser.find_element_by_id('session_password')
+            login_password.send_keys(password)
 
-        self.logged_in = False
+            self.browser.find_element_by_xpath("//input[@value='Anmelden']").click()
+
         try:
             element_present = EC.presence_of_element_located((By.LINK_TEXT,
                 'Mein Account'))
             WebDriverWait(self.browser, self.timeout).until(element_present)
             self.logger.info('Logged in.')
+            pickle.dump( self.browser.get_cookies() , open(cookies_file,"wb"))
             self.logged_in = True
         except TimeoutException:
             self.logger.info("Timed out waiting for page to load")
-
 
 
 
@@ -121,7 +131,7 @@ class Scraper:
 
     def destroy(self):
 
-        self.browser.close()
+        #self.browser.close()
 
         if 'Linux' in platform.uname():
             self.display.popen.kill()

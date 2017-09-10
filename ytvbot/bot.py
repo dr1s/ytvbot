@@ -26,7 +26,8 @@ def download(links, output_dir=None):
         if output_dir:
             output_file = os.path.join(output_dir, filename)
 
-        downloader = fileDownloader.DownloadFile(item, output_file, progress_bar=True)
+        downloader = fileDownloader.DownloadFile(item, output_file,
+                    progress_bar=True)
         if os.path.isfile(output_file):
             if (os.path.isfile(tmp_file)):
                 logger.info('Resuming download: %s' % item)
@@ -106,7 +107,7 @@ def main():
         sys.exit(2)
     for o, a in opts:
         if o in ("-h", "--help"):
-            #usage()
+            usage()
             sys.exit()
         elif o in ("-o", "--output"):
             output_dir = os.path.abspath(a)
@@ -130,6 +131,7 @@ def main():
 
     setup_dir()
     download_links = None
+    recording_links = []
     if not download_links_file:
         try:
             scrapers = scraper.Scraper()
