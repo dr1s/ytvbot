@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 setup(
     name='ytvbot',
     version='0.1',
-    url='https://github.com/dr1s',
+    url='https://github.com/dr1s/ytvbot',
     author='drs',
     license='MIT',
     description='Download latest recordings from youtv',
