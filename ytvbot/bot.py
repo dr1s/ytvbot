@@ -134,7 +134,7 @@ def main():
     recording_links = []
     if not download_links_file:
         try:
-            scrapers = scraper.Scraper()
+            scrapers = scraper.Scraper(config_dir=ytvbot_dir)
             scrapers.login(email, password)
             recordings = scrapers.get_available_recordings()
             recording_links = scrapers.get_links_for_recordings(recordings)

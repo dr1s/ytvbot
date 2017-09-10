@@ -22,7 +22,7 @@ from selenium.common.exceptions import NoSuchElementException
 
 class Scraper:
 
-    def __init__(self, timeout=20,loglevel='DEBUG'):
+    def __init__(self, timeout=20, config_dir=None):
 
         reload(sys)
         sys.setdefaultencoding('utf8')
@@ -47,14 +47,16 @@ class Scraper:
         self.logged_in = False
 
         self.timeout = timeout
-
+        self.config_dir = config_dir
 
 
     def login(self, email, password):
-        cookies_file = "cookies.pkl"
-
+        cookies_file = "cookies"
+        if self.config_dir:
+            cookies_file = os.path.join(self.config_dir, cookies_file)
+        self.logger.debug('cookies file: %s' % cookies_file)
         self.logger.info('Loggin in')
-        self.browser.get('https://www.youtv.de/')
+        self.browser.get('https://www.youtv.de/login')
 
         if os.path.isfile(cookies_file):
             self.logger.debug("cookies found, adding to current browser session")
@@ -62,8 +64,8 @@ class Scraper:
             for cookie in cookies:
                 self.browser.add_cookie(cookie)
             self.browser.get('https://www.youtv.de/')
-
-        if not os.path.isfile(cookies_file):
+        else:
+            self.logger.debug('No cookies found, logging in')
             login_email = self.browser.find_element_by_id("session_email")
             login_email.send_keys(email)
             login_password = self.browser.find_element_by_id('session_password')
@@ -131,7 +133,7 @@ class Scraper:
 
     def destroy(self):
 
-        #self.browser.close()
+        self.browser.close()
 
         if 'Linux' in platform.uname():
             self.display.popen.kill()
