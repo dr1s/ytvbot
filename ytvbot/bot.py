@@ -46,37 +46,38 @@ def download(links, output_dir=None, progress_bar=False):
             downloader.download()
             os.remove(tmp_file)
 
-def select_download_links(recording_links):
+def select_download_links(  recording_links,
+                            quality_priority_list=['hd','hq','nq']):
 
     logger.info('Selecting best resolution for recordings')
     download_links = []
     for recording in recording_links:
         links = recording_links[recording]
         for link in links:
-            if 'hd' in link:
-                download_links.append(link)
+            for quality in quality_priority_list:
+                if quality in link:
+                    download_links.append(link)
+                    break
                 break
-            elif 'hq' in link:
-                download_links.append(link)
     return download_links
 
 def write_links_to_cache(links):
-    for link in links:
-        cache_file = os.path.join(ytvbot_dir, 'cache')
-        if link not in open(cache_file).read():
-            logger.debug('Link not found in cache, adding: %s' % link)
-            with open(cache_file, "a") as f:
-                f.write("%s\n" % link)
-        else:
-            logger.debug('Link already found in cache %s' % link)
+
+    cache_file = os.path.join(ytvbot_dir, 'cache')
+    write_links_to_file(links, cache_file)
 
 def write_links_to_file(links, output):
 
     logger.info("Wrtiting links to file: %s" % output)
-    output_file = open(output, 'w')
-    for item in links:
-        output_file.write("%s\n" % item)
-    output_file.close()
+    #output_file = open(output, 'w')
+    for link in links:
+        if link not in open(output).read():
+            logger.debug('Link not found in file adding: %s' % link)
+            with open(output, "a") as f:
+                f.write("%s\n" % link)
+        else:
+            logger.debug('Link already found in file %s' % link)
+    #output_file.close()
 
 def usage():
     print("usage: ytvbot [arguments]")
@@ -87,8 +88,10 @@ def usage():
     print(" -n | --no-download: Don't download anything")
     print(" -l | --links [output_file]: Save links in this file")
     print(" -f | --file [input_file]: File with links to download")
+    print(" -# | --progress: show progress bar when downloading files")
 
 def setup_dir():
+
     global ytvbot_dir
 
     if not ytvbot_dir:
@@ -151,17 +154,14 @@ def main():
     browsers = None
 
     if not download_links_file:
-        br = Browser(config_dir=ytvbot_dir, loglevel=loglevel)
 
+        br = Browser(config_dir=ytvbot_dir, loglevel=loglevel)
         try:
             br.login(email, password)
             scraper = Scraper(br.browser, loglevel=loglevel)
             recordings = scraper.get_available_recordings()
             recording_links = scraper.get_links_for_recordings(recordings)
-        except KeyboardInterrupt:
-            if br:
-                br.destroy()
-        except WebDriverException:
+        except KeyboardInterrupt or WebDriverException:
             if br:
                 br.destroy()
         download_links = select_download_links(recording_links)
