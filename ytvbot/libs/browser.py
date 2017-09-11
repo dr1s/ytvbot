@@ -22,7 +22,8 @@ from selenium.common.exceptions import NoSuchElementException
 
 class Browser:
 
-    def __init__(self, timeout=20, config_dir=None, loglevel=logging.DEBUG):
+    def __init__(self, timeout=20, config_dir=None,
+                    loglevel=logging.DEBUG):
 
         reload(sys)
         sys.setdefaultencoding('utf8')
@@ -31,7 +32,8 @@ class Browser:
         logger.setLevel(loglevel)
         ch = logging.StreamHandler()
         ch.setLevel(loglevel)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         ch.setFormatter(formatter)
         logger.addHandler(ch)
         self.logger = logger
@@ -41,7 +43,8 @@ class Browser:
             self.display = Display(visible=0, size=(1024, 768))
             self.display.start()
         else:
-            self.logger.info('MacOS or Windows detected, can\'t start headless mode')
+            self.logger.info(
+                'MacOS or Windows detected, can\'t start headless mode')
 
         self.browser = webdriver.Firefox()
         self.logged_in = False
@@ -49,19 +52,20 @@ class Browser:
         self.timeout = timeout
         self.config_dir = config_dir
 
-    def __import_cookies_file__(cookies_file):
+    def __import_cookies_file__(self, cookies_file):
 
         self.logger.debug('cookies file: %s' % cookies_file)
-        self.logger.debug("cookies found, adding to current browser session")
+        self.logger.debug(
+            "cookies found, adding to current browser session")
         cookies = pickle.load(open(cookies_file, "rb"))
         for cookie in cookies:
             self.browser.add_cookie(cookie)
         self.browser.get('https://www.youtv.de/')
 
-    def __check_logged_in__():
+    def __check_logged_in__(self):
         try:
-            element_present = EC.presence_of_element_located((By.LINK_TEXT,
-                'Mein Account'))
+            element_present = EC.presence_of_element_located((
+                By.LINK_TEXT,'Mein Account'))
             WebDriverWait(self.browser, self.timeout).until(element_present)
             self.logger.info('Logged in.')
             self.logged_in = True
@@ -83,10 +87,12 @@ class Browser:
             self.logger.debug('No cookies found, logging in')
             login_email = self.browser.find_element_by_id("session_email")
             login_email.send_keys(email)
-            login_password = self.browser.find_element_by_id('session_password')
+            login_password = self.browser.find_element_by_id(
+                'session_password')
             login_password.send_keys(password)
 
-            self.browser.find_element_by_xpath("//input[@value='Anmelden']").click()
+            self.browser.find_element_by_xpath(
+                "//input[@value='Anmelden']").click()
 
         self.__check_logged_in__()
         pickle.dump( self.browser.get_cookies() , open(cookies_file,"wb"))

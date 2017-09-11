@@ -19,7 +19,7 @@ password = None
 ytvbot_dir = None
 loglevel = logging.DEBUG
 
-def download(links, output_dir=None):
+def download(links, output_dir=None, progress_bar=False):
 
     for item in links:
         filename = item.split('/')[len(item.split('/'))-1]
@@ -29,7 +29,7 @@ def download(links, output_dir=None):
             output_file = os.path.join(output_dir, filename)
 
         downloader = fileDownloader.DownloadFile(item, output_file,
-                    progress_bar=True)
+                    progress_bar=progress_bar)
         if os.path.isfile(output_file):
             if (os.path.isfile(tmp_file)):
                 logger.info('Resuming download: %s' % item)
@@ -37,7 +37,8 @@ def download(links, output_dir=None):
                     downloader.resume()
                     os.remove(tmp_file)
                 except HTTPError:
-                    logger.debug("Can't resume. File already finished downloading")
+                    logger.debug(
+                        "Can't resume. File already finished downloading")
         else:
             logger.info('Downloading: %s' % item)
             with open(tmp_file, 'w'):
@@ -108,11 +109,12 @@ def main():
     link_output = None
     download_links_file = None
     download_files = True
+    progress_bar = False
 
     try:
-        long = ["help", "output=", "links=", "file=", "user=", "password=",
-                "config-dir=", "no-download"]
-        opts, args = getopt.getopt(sys.argv[1:], "hno:l:f:u:p:c:", long )
+        long = ["help", "output=", "links=", "file=", "user=",
+                "password=", "config-dir=", "no-download", "progress"]
+        opts, args = getopt.getopt(sys.argv[1:], "hno:l:f:u:p:c:#", long )
     except getopt.GetoptError as err:
         print str(err)
         usage()
@@ -138,6 +140,8 @@ def main():
         elif o in ("-c", "--config-dir"):
             global ytvbot_dir
             ytvbot_dir = a
+        elif o in ("-#", "--progress"):
+            progress_bar = True
         else:
             assert False, "unhandled option"
 
@@ -172,14 +176,15 @@ def main():
         write_links_to_file(download_links, link_output)
 
     if download_files:
-        download(download_links, output_dir)
+        download(download_links, output_dir, progress_bar=progress_bar)
 
 
 logger = logging.getLogger('ytvbot')
 logger.setLevel(loglevel)
 ch = logging.StreamHandler()
 ch.setLevel(loglevel)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
