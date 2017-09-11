@@ -10,7 +10,6 @@ import fileDownloader
 
 from libs.browser import Browser
 from libs.scraper import Scraper
-from libs.io import *
 
 from selenium.common.exceptions import WebDriverException
 from urllib2 import HTTPError
