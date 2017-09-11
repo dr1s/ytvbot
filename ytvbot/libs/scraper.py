@@ -89,6 +89,9 @@ class Scraper:
 
         self.logger.info('Getting available recordings')
         self.browser.get('https://www.youtv.de/videorekorder')
+        # Scroll to bottom to load all recordings
+        self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
         recordings = []
         titles = self.browser.find_elements_by_class_name('broadcasts-table-cell-title')
         for title in titles:
