@@ -7,7 +7,8 @@ import getopt
 import logging
 import fileDownloader
 
-from libs import scraper
+from libs.browser import Browser
+from libs.scraper import Scraper
 
 from selenium.common.exceptions import WebDriverException
 from urllib2 import HTTPError
@@ -16,6 +17,7 @@ email = None
 password = None
 
 ytvbot_dir = None
+loglevel = logging.DEBUG
 
 def download(links, output_dir=None):
 
@@ -57,6 +59,15 @@ def select_download_links(recording_links):
                 download_links.append(link)
     return download_links
 
+def write_links_to_cache(links):
+    for link in links:
+        cache_file = os.path.join(ytvbot_dir, 'cache')
+        if link not in open(cache_file).read():
+            logger.debug('Link not found in cache, adding: %s' % link)
+            with open(cache_file, "a") as f:
+                f.write("%s\n" % link)
+        else:
+            logger.debug('Link already found in cache %s' % link)
 
 def write_links_to_file(links, output):
 
@@ -82,8 +93,9 @@ def setup_dir():
     if not ytvbot_dir:
         home = os.path.expanduser("~")
         ytvbot_dir = os.path.join(home, '.ytvbot')
-        if not os.path.isdir(ytvbot_dir):
-            os.mkdir(ytvbot_dir)
+
+    if not os.path.isdir(ytvbot_dir):
+        os.mkdir(ytvbot_dir)
 
     cache_file = os.path.join(ytvbot_dir, 'cache')
     if not os.path.exists(cache_file):
@@ -132,31 +144,29 @@ def main():
     setup_dir()
     download_links = None
     recording_links = []
+    browsers = None
+
     if not download_links_file:
+        br = Browser(config_dir=ytvbot_dir, loglevel=loglevel)
+
         try:
-            scrapers = scraper.Scraper(config_dir=ytvbot_dir)
-            scrapers.login(email, password)
-            recordings = scrapers.get_available_recordings()
-            recording_links = scrapers.get_links_for_recordings(recordings)
-            scrapers.destroy()
+            br.login(email, password)
+            scraper = Scraper(br.browser, loglevel=loglevel)
+            recordings = scraper.get_available_recordings()
+            recording_links = scraper.get_links_for_recordings(recordings)
         except KeyboardInterrupt:
-            scrapers.destroy()
+            if br:
+                br.destroy()
         except WebDriverException:
-            scrapers.destroy()
+            if br:
+                br.destroy()
         download_links = select_download_links(recording_links)
     else:
         with open(download_links_file) as f:
             download_links = f.readlines()
         download_links = [x.strip() for x in download_links]
 
-    for link in download_links:
-        cache_file = os.path.join(ytvbot_dir, 'cache')
-        if link not in open(cache_file).read():
-            logger.debug('Link not found in cache, adding: %s' % link)
-            with open(cache_file, "a") as f:
-                f.write("%s\n" % link)
-        else:
-            logger.debug('Link already found in cache %s' % link)
+    write_links_to_cache(download_links)
 
     if link_output and not download_links_file:
         write_links_to_file(download_links, link_output)
@@ -166,9 +176,9 @@ def main():
 
 
 logger = logging.getLogger('ytvbot')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(loglevel)
 ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
+ch.setLevel(loglevel)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
 logger.addHandler(ch)
