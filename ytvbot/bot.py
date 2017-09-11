@@ -47,6 +47,21 @@ def setup_dir():
         with open(cache_file, 'a'):
             os.utime(cache_filen, None)
 
+
+def get_download_links():
+    download_links = []
+    br = Browser(config_dir=ytvbot_dir, loglevel=loglevel)
+    try:
+        br.login(email, password)
+        scraper = Scraper(br.browser, loglevel=loglevel)
+        download_links = scraper.get_all_download_links()
+        br.destroy()
+    except KeyboardInterrupt or WebDriverException:
+        if br:
+            br.destroy()
+    return download_links
+
+
 def main():
 
     output_dir = None
@@ -95,23 +110,13 @@ def main():
     browsers = None
 
     if not download_links_file:
-
-        br = Browser(config_dir=ytvbot_dir, loglevel=loglevel)
-        try:
-            br.login(email, password)
-            scraper = Scraper(br.browser, loglevel=loglevel)
-            download_links = scraper.get_all_download_links()
-            br.destroy()
-        except KeyboardInterrupt or WebDriverException:
-            if br:
-                br.destroy()
+        download_links = get_download_links()
     else:
         with open(download_links_file) as f:
             download_links = f.readlines()
         download_links = [x.strip() for x in download_links]
 
     cache_file = os.path.join(ytvbot_dir, 'cache')
-
     write_links_to_file(download_links, cache_file)
 
     if link_output and not download_links_file:
