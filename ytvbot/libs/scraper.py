@@ -52,7 +52,9 @@ class Scraper:
                 recordings.append(href)
 
         self.logger.info('Found %i available recordings' % len(recordings))
+
         return recordings
+
 
     def get_links_for_recording(self, url):
 
@@ -79,4 +81,31 @@ class Scraper:
         for url in urls:
             new_links = self.get_links_for_recording(url)
             links[url] = new_links
+
         return links
+
+
+    def select_download_links(  self, recording_links,
+                                quality_priority_list=['hd','hq','nq']):
+
+        self.logger.info('Selecting best resolution for recordings')
+        download_links = []
+        for recording in recording_links:
+            links = recording_links[recording]
+            for link in links:
+                for quality in quality_priority_list:
+                    if quality in link:
+                        self.logger.debug('Selecting link: %s' % link)
+                        download_links.append(link)
+                        break
+                    break
+
+        return download_links
+
+
+    def get_all_download_links( self, quality_priority_list=['hd','hq','nq']):
+        recordings = self.get_available_recordings()
+        recording_links = self.get_links_for_recordings(recordings)
+        download_links = self.select_download_links(recording_links)
+
+        return download_links

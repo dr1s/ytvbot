@@ -5,13 +5,12 @@ import os
 import sys
 import getopt
 import logging
-import fileDownloader
 
 from libs.browser import Browser
 from libs.scraper import Scraper
+from libs.io import *
 
 from selenium.common.exceptions import WebDriverException
-from urllib2 import HTTPError
 
 email = None
 password = None
@@ -19,70 +18,12 @@ password = None
 ytvbot_dir = None
 loglevel = logging.DEBUG
 
-def download(links, output_dir=None, progress_bar=False):
-
-    for item in links:
-        filename = item.split('/')[len(item.split('/'))-1]
-        output_file = filename
-        tmp_file = filename + ".download"
-        if output_dir:
-            output_file = os.path.join(output_dir, filename)
-
-        downloader = fileDownloader.DownloadFile(item, output_file,
-                    progress_bar=progress_bar)
-        if os.path.isfile(output_file):
-            if (os.path.isfile(tmp_file)):
-                logger.info('Resuming download: %s' % item)
-                try:
-                    downloader.resume()
-                    os.remove(tmp_file)
-                except HTTPError:
-                    logger.debug(
-                        "Can't resume. File already finished downloading")
-        else:
-            logger.info('Downloading: %s' % item)
-            with open(tmp_file, 'w'):
-                    os.utime(tmp_file, None)
-            downloader.download()
-            os.remove(tmp_file)
-
-def select_download_links(  recording_links,
-                            quality_priority_list=['hd','hq','nq']):
-
-    logger.info('Selecting best resolution for recordings')
-    download_links = []
-    for recording in recording_links:
-        links = recording_links[recording]
-        for link in links:
-            for quality in quality_priority_list:
-                if quality in link:
-                    download_links.append(link)
-                    break
-                break
-    return download_links
-
-def write_links_to_cache(links):
-
-    cache_file = os.path.join(ytvbot_dir, 'cache')
-    write_links_to_file(links, cache_file)
-
-def write_links_to_file(links, output):
-
-    logger.info("Wrtiting links to file: %s" % output)
-    #output_file = open(output, 'w')
-    for link in links:
-        if link not in open(output).read():
-            logger.debug('Link not found in file adding: %s' % link)
-            with open(output, "a") as f:
-                f.write("%s\n" % link)
-        else:
-            logger.debug('Link already found in file %s' % link)
-    #output_file.close()
 
 def usage():
     print("usage: ytvbot [arguments]")
     print(" -u | --user [email]: email adress of the account")
     print(" -p | --password [password]: password ouf the account ")
+    print(" -c | --config-dir [config-dir]: path to configuration directory")
     print(" -o | --output [output_dir]: output directory")
     print(" -h | --help: shows this message")
     print(" -n | --no-download: Don't download anything")
@@ -159,18 +100,19 @@ def main():
         try:
             br.login(email, password)
             scraper = Scraper(br.browser, loglevel=loglevel)
-            recordings = scraper.get_available_recordings()
-            recording_links = scraper.get_links_for_recordings(recordings)
+            download_links = scraper.get_all_download_links()
+            br.destroy()
         except KeyboardInterrupt or WebDriverException:
             if br:
                 br.destroy()
-        download_links = select_download_links(recording_links)
     else:
         with open(download_links_file) as f:
             download_links = f.readlines()
         download_links = [x.strip() for x in download_links]
 
-    write_links_to_cache(download_links)
+    cache_file = os.path.join(ytvbot_dir, 'cache')
+
+    write_links_to_file(download_links, cache_file)
 
     if link_output and not download_links_file:
         write_links_to_file(download_links, link_output)
