@@ -33,7 +33,6 @@ def usage():
     print(" -h | --help: shows this message")
     print(" -n | --no-download: Don't download anything")
     print(" -l | --links [output_file]: Save links in this file")
-    print(" -f | --file [input_file]: File with links to download")
     print(" -# | --progress: show progress bar when downloading files")
     print(" -s | --search [show_name]: only look for show_name")
 
@@ -54,6 +53,20 @@ def setup_dir():
             os.utime(cache_filen, None)
 
 
+def select_download_link(   recording,
+                            quality_priority_list=['hd','hq','nq']):
+
+    links = recording.links
+    for link in links:
+        link_found = False
+        for quality in quality_priority_list:
+            if quality in link:
+                logger.debug('Selecting link: %s' % link)
+                return link
+            else:
+                return None
+
+
 def get_download_links(search=None):
     download_links = []
     br = Browser(config_dir=ytvbot_dir, loglevel=loglevel)
@@ -67,20 +80,48 @@ def get_download_links(search=None):
             br.destroy()
     return download_links
 
+
+def get_recordings(search=None):
+    recordings = []
+    br = Browser(config_dir=ytvbot_dir, loglevel=loglevel)
+    try:
+        br.login(email, password)
+        scraper = Scraper(br.browser, loglevel=loglevel)
+        recordings = scraper.get_recordings(search)
+        br.destroy()
+    except KeyboardInterrupt or WebDriverException:
+        if br:
+            br.destroy()
+    return recordings
+
+
 def download(links, output_dir=None, progress_bar=False):
 
     for item in links:
-        filename = os.path.basename(item)
+        download_link = select_download_link(item)
+        filename = os.path.basename(download_link)
         output_file = filename
-        tmp_file = filename + ".download"
         if output_dir:
+            if item.show_name:
+                output_dir = os.path.join(output_dir, item.show_name)
+                if not os.path.exists(output_dir):
+                    os.mkdir(output_dir)
             output_file = os.path.join(output_dir, filename)
+        else:
+            if item.show_name:
+                output_file = os.path.join(item.show_name, filename)
+                if not os.path.exists(item.show_name):
+                    os.mkdir(item.show_name)
 
-        downloader = fileDownloader.DownloadFile(item, output_file,
+        tmp_file = output_file + ".download"
+
+
+        downloader = fileDownloader.DownloadFile(download_link, output_file,
                     progress_bar=progress_bar)
+
         if os.path.isfile(output_file):
             if (os.path.isfile(tmp_file)):
-                logger.debug('Resuming download: %s' % item)
+                logger.debug('Resuming download: %s' % download_link)
                 try:
                     downloader.resume()
                     os.remove(tmp_file)
@@ -91,39 +132,38 @@ def download(links, output_dir=None, progress_bar=False):
                 logger.debug("File already finished downloading: %s" %
                     output_file)
         else:
-            logger.info('Downloading: %s' % item)
+            logger.info('Downloading: %s' % download_link)
             with open(tmp_file, 'w'):
                     os.utime(tmp_file, None)
             downloader.download()
             os.remove(tmp_file)
 
 
-def write_links_to_file(links, output):
+def write_links_to_file(recordings, output):
 
     logger.info("Wrtiting links to file: %s" % output)
-    print links
-    for link in links:
-        if link not in open(output).read():
-            logger.debug('Link not found in file adding: %s' % link)
+    for recording in recordings:
+        download_link = select_download_link(recording)
+        if download_link not in open(output).read():
+            logger.debug('Link not found in file adding: %s' % download_link)
             with open(output, "a") as f:
-                f.write("%s\n" % link)
+                f.write("%s\n" % download_link)
         else:
-            logger.debug('Link already found in file %s' % link)
+            logger.debug('Link already found in file %s' % download_link)
 
 
 def main():
 
     output_dir = None
     link_output = None
-    download_links_file = None
     download_files = True
     progress_bar = False
 
     try:
-        long = ["help", "output=", "links=", "file=", "user=",
-                "password=", "config-dir=", "no-download", "progress",
-                "search"]
-        opts, args = getopt.getopt(sys.argv[1:], "hno:l:f:u:p:c:#s:", long )
+        long = ["help", "output=", "links=", "user=", "password=",
+                "config-dir=", "no-download", "progress", "search"]
+
+        opts, args = getopt.getopt(sys.argv[1:], "hno:l:u:p:c:#s:", long )
     except getopt.GetoptError as err:
         print str(err)
         usage()
@@ -136,8 +176,6 @@ def main():
             output_dir = os.path.abspath(a)
         elif o in ("-l", "--links"):
             link_output = os.path.abspath(a)
-        elif o in ("-f", "--file"):
-            download_links_file = os.path.abspath(a)
         elif o in ("-n", "--no-download"):
             download_files = False
         elif o in ("-u", "--user"):
@@ -162,24 +200,18 @@ def main():
     recording_links = []
     browsers = None
 
-    if not download_links_file:
-        download_links = get_download_links(search)
-        print download_links
-    else:
-        with open(download_links_file) as f:
-            download_links = f.readlines()
-        download_links = [x.strip() for x in download_links]
+    recordings = get_recordings(search)
 
     cache_file = os.path.join(ytvbot_dir, 'cache')
-    write_links_to_file(download_links, cache_file)
+    write_links_to_file(recordings, cache_file)
 
-    if link_output and not download_links_file:
+    if link_output:
         with open(link_output, 'w'):
-                    os.utime(link_output, None)
-        write_links_to_file(download_links, link_output)
+            os.utime(link_output, None)
+        write_links_to_file(recordings, link_output)
 
     if download_files:
-        download(download_links, output_dir, progress_bar=progress_bar)
+        download(recordings, output_dir, progress_bar=progress_bar)
 
 
 logger = logging.getLogger('ytvbot')

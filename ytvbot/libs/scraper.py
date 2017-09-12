@@ -6,6 +6,15 @@ import logging
 from selenium.common.exceptions import NoSuchElementException
 
 
+class Recording:
+
+    def __init__(self, url, show_name, links):
+        self.url = url
+        self.show_name = show_name
+        self.links = links
+
+
+
 class Scraper:
 
     def __init__(self, browser, loglevel=logging.DEBUG):
@@ -94,47 +103,40 @@ class Scraper:
 
         return links
 
+    def get_showname_from_recording(self, url):
+        show_name = None
+        try:
+            show_tmp = self.browser.find_element_by_class_name("broadcast-details-header--content")
+            show_name = show_tmp.find_element_by_tag_name('a').text.title() #.lower()
+        except NoSuchElementException:
+            self.logger.debug("Cant find show link for: %s" % url)
 
-    def get_links_for_recordings(self, urls):
-
-        links = {}
-        for url in urls:
-            new_links = self.get_links_for_recording(url)
-            links[url] = new_links
-
-        return links
-
-
-    def select_download_links(  self, recording_links,
-                                quality_priority_list=['hd','hq','nq']):
-
-        self.logger.info('Selecting best resolution for recordings')
-        download_links = []
-        for recording in recording_links:
-            links = recording_links[recording]
-            for link in links:
-                link_found = False
-                for quality in quality_priority_list:
-                    if quality in link:
-                        self.logger.debug('Selecting link: %s' % link)
-                        download_links.append(link)
-                        link_found = True
-                        break
-                if link_found:
-                    break
-
-        return download_links
+        if not show_name:
+            try:
+                show_tmp = self.browser.find_element_by_class_name("broadcast-details-header--content")
+                show_name = show_tmp.find_element_by_tag_name('h3').text.title()#.lower()
+            except NoSuchElementException:
+                self.logger.debug("Can't find any show name for: %s" % url)
+        return show_name
 
 
-    def get_all_download_links( self, search=None,
-                                quality_priority_list=['hd','hq','nq']):
+    def get_recording_from_url(self, url):
+        links = self.get_links_for_recording(url)
+        name = self.get_showname_from_recording(url)
+        recording = Recording(url, name, links)
+
+        return recording
+
+
+    def get_recordings(self, search=None):
         recordings = []
+        recordings_urls= []
         if search:
-            recordings = self.get_recordings_for_name(search)
+            recordings_urls = self.get_recordings_for_name(search)
         else:
-            recordings = self.get_available_recordings()
-        recording_links = self.get_links_for_recordings(recordings)
-        download_links = self.select_download_links(recording_links,
-            quality_priority_list)
+            recordings_urls = self.get_available_recordings()
 
-        return download_links
+        for url in recordings_urls:
+            recordings.append(self.get_recording_from_url(url))
+
+        return recordings
