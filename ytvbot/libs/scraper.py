@@ -55,7 +55,9 @@ class Scraper:
         titles = self.browser.find_elements_by_class_name(
             'broadcasts-table-cell-title')
         for title in titles:
-            recordings.append(self.get_recording_link(title))
+            recording_tmp = self.get_recording_link(title)
+            if recording_tmp:
+                recordings.append(recording_tmp)
 
         self.logger.info('Found %i available recordings' % len(recordings))
 
@@ -109,14 +111,10 @@ class Scraper:
         self.logger.info('Selecting best resolution for recordings')
         download_links = []
         for recording in recording_links:
-            print recording
             links = recording_links[recording]
             for link in links:
                 link_found = False
                 for quality in quality_priority_list:
-                    print recording_links
-                    print link
-                    print quality
                     if quality in link:
                         self.logger.debug('Selecting link: %s' % link)
                         download_links.append(link)
@@ -128,7 +126,8 @@ class Scraper:
         return download_links
 
 
-    def get_all_download_links( self, search=None, quality_priority_list=['hd','hq','nq']):
+    def get_all_download_links( self, search=None,
+                                quality_priority_list=['hd','hq','nq']):
         recordings = []
         if search:
             recordings = self.get_recordings_for_name(search)
