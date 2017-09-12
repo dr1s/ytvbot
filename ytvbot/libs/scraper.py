@@ -8,10 +8,11 @@ from selenium.common.exceptions import NoSuchElementException
 
 class Recording:
 
-    def __init__(self, url, show_name, links):
+    def __init__(self, url, show_name, links , information=None):
         self.url = url
         self.show_name = show_name
         self.links = links
+        self.information = information
 
 
 
@@ -107,24 +108,36 @@ class Scraper:
         show_name = None
         try:
             show_tmp = self.browser.find_element_by_class_name("broadcast-details-header--content")
-            show_name = show_tmp.find_element_by_tag_name('a').text.title() #.lower()
+            show_name = show_tmp.find_element_by_tag_name('a').text.title()
         except NoSuchElementException:
             self.logger.debug("Cant find show link for: %s" % url)
 
         if not show_name:
             try:
-                show_tmp = self.browser.find_element_by_class_name("broadcast-details-header--content")
-                show_name = show_tmp.find_element_by_tag_name('h3').text.title()#.lower()
+                show_tmp = self.browser.find_element_by_class_name(
+                    "broadcast-details-header--content")
+                show_name = show_tmp.find_element_by_tag_name('h3').text.title()
             except NoSuchElementException:
                 self.logger.debug("Can't find any show name for: %s" % url)
         return show_name
 
+    def get_information_from_recording(self, url):
+        information = []
+        try:
+            information_tmp = self.browser.find_element_by_class_name(
+                "broadcast-details--information")
+            information_div = information_tmp.find_elements_by_tag_name("div")
+            for i in information_div:
+                information.append(i.text)
+        except NoSuchElementException:
+            self.logger.debug("No information found for: %s" % url)
+        return information
 
     def get_recording_from_url(self, url):
         links = self.get_links_for_recording(url)
         name = self.get_showname_from_recording(url)
-        recording = Recording(url, name, links)
-
+        information = self.get_information_from_recording(url)
+        recording = Recording(url, name, links, information)
         return recording
 
 

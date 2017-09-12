@@ -6,7 +6,7 @@ import sys
 import getopt
 import logging
 import fileDownloader
-
+import textwrap
 
 from libs.browser import Browser
 from libs.scraper import Scraper
@@ -114,6 +114,13 @@ def download(links, output_dir=None, progress_bar=False):
                     os.mkdir(item.show_name)
 
         tmp_file = output_file + ".download"
+
+        if item.information:
+            info_file = output_file.split('.')[0] + ".txt"
+            with open(info_file, "w") as f:
+                f.write("%s\n\n" % item.show_name)
+                for i in item.information:
+                    f.write("%s\n\n" % textwrap.fill(i))
 
 
         downloader = fileDownloader.DownloadFile(download_link, output_file,
