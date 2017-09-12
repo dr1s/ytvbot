@@ -19,6 +19,8 @@ email = None
 password = None
 
 ytvbot_dir = None
+search = None
+
 loglevel = logging.DEBUG
 
 
@@ -33,6 +35,7 @@ def usage():
     print(" -l | --links [output_file]: Save links in this file")
     print(" -f | --file [input_file]: File with links to download")
     print(" -# | --progress: show progress bar when downloading files")
+    print(" -s | --search [show_name]: only look for show_name")
 
 def setup_dir():
 
@@ -51,13 +54,13 @@ def setup_dir():
             os.utime(cache_filen, None)
 
 
-def get_download_links():
+def get_download_links(search=None):
     download_links = []
     br = Browser(config_dir=ytvbot_dir, loglevel=loglevel)
     try:
         br.login(email, password)
         scraper = Scraper(br.browser, loglevel=loglevel)
-        download_links = scraper.get_all_download_links()
+        download_links = scraper.get_all_download_links(search)
         br.destroy()
     except KeyboardInterrupt or WebDriverException:
         if br:
@@ -85,7 +88,8 @@ def download(links, output_dir=None, progress_bar=False):
                     logger.debug(
                         "Can't resume. File already finished downloading")
             else:
-                logger.debug("File already finished downloading")
+                logger.debug("File already finished downloading: %s" %
+                    output_file)
         else:
             logger.info('Downloading: %s' % item)
             with open(tmp_file, 'w'):
@@ -97,6 +101,7 @@ def download(links, output_dir=None, progress_bar=False):
 def write_links_to_file(links, output):
 
     logger.info("Wrtiting links to file: %s" % output)
+    print links
     for link in links:
         if link not in open(output).read():
             logger.debug('Link not found in file adding: %s' % link)
@@ -116,8 +121,9 @@ def main():
 
     try:
         long = ["help", "output=", "links=", "file=", "user=",
-                "password=", "config-dir=", "no-download", "progress"]
-        opts, args = getopt.getopt(sys.argv[1:], "hno:l:f:u:p:c:#", long )
+                "password=", "config-dir=", "no-download", "progress",
+                "search"]
+        opts, args = getopt.getopt(sys.argv[1:], "hno:l:f:u:p:c:#s:", long )
     except getopt.GetoptError as err:
         print str(err)
         usage()
@@ -145,6 +151,9 @@ def main():
             ytvbot_dir = a
         elif o in ("-#", "--progress"):
             progress_bar = True
+        elif o in ("-s", "--search"):
+            global search
+            search = a
         else:
             assert False, "unhandled option"
 
@@ -154,7 +163,8 @@ def main():
     browsers = None
 
     if not download_links_file:
-        download_links = get_download_links()
+        download_links = get_download_links(search)
+        print download_links
     else:
         with open(download_links_file) as f:
             download_links = f.readlines()
@@ -164,6 +174,8 @@ def main():
     write_links_to_file(download_links, cache_file)
 
     if link_output and not download_links_file:
+        with open(link_output, 'w'):
+                    os.utime(link_output, None)
         write_links_to_file(download_links, link_output)
 
     if download_files:
