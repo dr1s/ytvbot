@@ -122,10 +122,12 @@ def download_recordings(links, output_dir=None, progress_bar=False):
         output_file = filename
         if output_dir:
             if item.show_name:
-                output_dir = os.path.join(output_dir, item.show_name)
-                if not os.path.exists(output_dir):
-                    os.mkdir(output_dir)
-            output_file = os.path.join(output_dir, filename)
+                output_tmp = os.path.join(output_dir, item.show_name)
+                if not os.path.exists(output_tmp):
+                    os.mkdir(output_tmp)
+                output_file = os.path.join(output_tmp, filename)
+            else:
+                output_file = os.path.join(output_dir, filename)
         else:
             if item.show_name:
                 output_file = os.path.join(item.show_name, filename)
