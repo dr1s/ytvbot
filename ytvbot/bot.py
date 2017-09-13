@@ -72,19 +72,6 @@ def select_download_link(   recording,
     return selected
 
 
-def get_download_links(search=None):
-    download_links = []
-    br = Browser(config_dir=ytvbot_dir, loglevel=loglevel)
-    try:
-        br.login(email, password)
-        scraper = Scraper(br.browser, loglevel=loglevel)
-        download_links = scraper.get_all_download_links(search)
-        br.destroy()
-    except KeyboardInterrupt or WebDriverException:
-        if br:
-            br.destroy()
-    return download_links
-
 
 def get_recordings(search=None):
     recordings = []

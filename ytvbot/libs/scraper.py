@@ -36,6 +36,7 @@ class Scraper:
 
         self.browser = browser
         self.logged_in = False
+        self.recorder_url = "https://www.youtv.de/videorekorder"
 
     def get_recording_link(self, title):
 
@@ -54,13 +55,14 @@ class Scraper:
 
     def load_recordings_page(self):
         self.logger.info('Getting available recordings')
-        self.browser.get('https://www.youtv.de/videorekorder')
+        self.browser.get(self.recorder_url)
         # Scroll to bottom to load all recordings
         self.browser.execute_script(
             "window.scrollTo(0, document.body.scrollHeight);")
 
     def get_available_recordings(self):
-        self.load_recordings_page()
+        if not self.browser.current_url is self.recorder_url:
+            self.load_recordings_page()
         recordings = []
         titles = self.browser.find_elements_by_class_name(
             'broadcasts-table-cell-title')
@@ -75,7 +77,8 @@ class Scraper:
 
 
     def get_recordings_for_name(self, name):
-        self.load_recordings_page()
+        if not self.browser.current_url is self.recorder_url:
+            self.load_recordings_page()
         recordings = []
         titles = self.browser.find_elements_by_class_name(
             'broadcasts-table-cell-title')
@@ -89,7 +92,8 @@ class Scraper:
     def get_links_for_recording(self, url):
 
         self.logger.info('Getting links from: %s' % url)
-        self.browser.get(url)
+        if not self.browser.current_url is url:
+            self.browser.get(url)
 
         downloads =  self.browser.find_elements_by_partial_link_text(
             'Definition')
@@ -104,8 +108,13 @@ class Scraper:
 
         return links
 
+
     def get_showname_from_recording(self, url):
+
         show_name = None
+        if not self.browser.current_url is url:
+            self.browser.get(url)
+
         try:
             show_tmp = self.browser.find_element_by_class_name("broadcast-details-header--content")
             show_name = show_tmp.find_element_by_tag_name('a').text.title()
@@ -121,8 +130,14 @@ class Scraper:
                 self.logger.debug("Can't find any show name for: %s" % url)
         return show_name
 
+
     def get_information_from_recording(self, url):
+
         information = []
+
+        if not self.browser.current_url is url:
+            self.browser.get(url)
+
         try:
             information_tmp = self.browser.find_element_by_class_name(
                 "broadcast-details--information")
@@ -134,6 +149,7 @@ class Scraper:
         return information
 
     def get_recording_from_url(self, url):
+
         links = self.get_links_for_recording(url)
         name = self.get_showname_from_recording(url)
         information = self.get_information_from_recording(url)
