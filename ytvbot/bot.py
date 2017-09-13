@@ -56,15 +56,20 @@ def setup_dir():
 def select_download_link(   recording,
                             quality_priority_list=['hd','hq','nq']):
 
+    selected = None
     links = recording.links
     for link in links:
         link_found = False
         for quality in quality_priority_list:
             if quality in link:
+                link_found = True
                 logger.debug('Selecting link: %s' % link)
-                return link
-            else:
-                return None
+                selected = link
+                break
+        if link_found:
+            break
+
+    return selected
 
 
 def get_download_links(search=None):
