@@ -71,6 +71,14 @@ def select_download_link(   recording,
 
     return selected
 
+def write_information_file(output_file, show_name, informations):
+    if not os.path.isfile(output_file):
+        with open(info_file, "w") as f:
+            f.write("%s\n\n" % show_name)
+            for i in informations:
+                f.write("%s\n\n" % textwrap.fill(i))
+    else:
+        logger.debug("information file already exists: %s" % info_file)
 
 
 def get_recordings(search=None):
@@ -87,7 +95,26 @@ def get_recordings(search=None):
     return recordings
 
 
-def download(links, output_dir=None, progress_bar=False):
+def resume(download_link, output_file):
+
+    tmp_file = output_file + ".download"
+
+    if (os.path.isfile(tmp_file)):
+        logger.debug('Resuming download: %s' % download_link)
+        try:
+            downloader.resume()
+            os.remove(tmp_file)
+        except HTTPError:
+            logger.debug(
+                "Can't resume. File already finished downloading")
+    else:
+        logger.debug("File already finished downloading: %s" %
+            output_file)
+
+
+
+
+def download_recordings(links, output_dir=None, progress_bar=False):
 
     for item in links:
         download_link = select_download_link(item)
@@ -105,35 +132,22 @@ def download(links, output_dir=None, progress_bar=False):
                 if not os.path.exists(item.show_name):
                     os.mkdir(item.show_name)
 
-        tmp_file = output_file + ".download"
 
         if item.information:
             info_file = output_file.split('.')[0] + ".txt"
-            with open(info_file, "w") as f:
-                f.write("%s\n\n" % item.show_name)
-                for i in item.information:
-                    f.write("%s\n\n" % textwrap.fill(i))
+            write_information_file(info_file, item.information, item.show_name)
 
 
         downloader = fileDownloader.DownloadFile(download_link, output_file,
                     progress_bar=progress_bar)
 
         if os.path.isfile(output_file):
-            if (os.path.isfile(tmp_file)):
-                logger.debug('Resuming download: %s' % download_link)
-                try:
-                    downloader.resume()
-                    os.remove(tmp_file)
-                except HTTPError:
-                    logger.debug(
-                        "Can't resume. File already finished downloading")
-            else:
-                logger.debug("File already finished downloading: %s" %
-                    output_file)
+            resume(download_link, output_file)
         else:
             logger.info('Downloading: %s' % download_link)
+            tmp_file = output_file + ".download"
             with open(tmp_file, 'w'):
-                    os.utime(tmp_file, None)
+                os.utime(tmp_file, None)
             downloader.download()
             os.remove(tmp_file)
 
@@ -211,7 +225,7 @@ def main():
         write_links_to_file(recordings, link_output)
 
     if download_files:
-        download(recordings, output_dir, progress_bar=progress_bar)
+        download_recordings(recordings, output_dir, progress_bar=progress_bar)
 
 
 logger = logging.getLogger('ytvbot')
