@@ -151,12 +151,13 @@ def write_links_to_file(recordings, output):
     logger.info("Wrtiting links to file: %s" % output)
     for recording in recordings:
         download_link = select_download_link(recording)
-        if download_link not in open(output).read():
-            logger.debug('Link not found in file adding: %s' % download_link)
-            with open(output, "a") as f:
-                f.write("%s\n" % download_link)
-        else:
-            logger.debug('Link already found in file %s' % download_link)
+        if download_link:
+            if download_link not in open(output).read():
+                logger.debug('Link not found in file adding: %s' % download_link)
+                with open(output, "a") as f:
+                    f.write("%s\n" % download_link)
+            else:
+                logger.debug('Link already found in file %s' % download_link)
 
 
 def main():
