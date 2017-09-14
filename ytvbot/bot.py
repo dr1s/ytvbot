@@ -8,12 +8,12 @@ import getopt
 import logging
 import fileDownloader
 import textwrap
-import datetime
 import json
 from prettytable import PrettyTable
 
 from libs.browser import Browser
 from libs.scraper import Scraper
+from libs.importer import import_json
 
 from selenium.common.exceptions import WebDriverException
 from urllib2 import HTTPError
@@ -203,9 +203,10 @@ def main():
 
     try:
         long = ["help", "output=", "links=", "user=", "password=",
-                "config-dir=", "no-download", "progress", "search"]
+                "config-dir=", "no-download", "progress", "search",
+                "json="]
 
-        opts, args = getopt.getopt(sys.argv[1:], "hno:l:u:p:c:#s:", long )
+        opts, args = getopt.getopt(sys.argv[1:], "hno:l:u:p:c:#s:j:", long )
     except getopt.GetoptError as err:
         print str(err)
         usage()
@@ -244,31 +245,36 @@ def main():
     recording_links = []
     browsers = None
 
-    recordings = get_recordings(search)
+    if not json_file or (json_file and not os.path.exists(json_file)):
+        recordings = get_recordings(search)
+
+    if json_file:
+        if os.path.isfile(json_file):
+            logger.debug('Importig json file: %s' % json_file)
+            recordings = import_json_file(json_file)
+        else:
+            logger.debug("Writing json file to: %s" % link_output)
+            recordings_list = []
+            for recording in recordings:
+                recordings_list.append(recording.dict())
+            with open(json_file, 'w') as f:
+                f.write(json.dumps(recordings_list, f, indent=2,
+                    sort_keys=True, ensure_ascii=False))
 
     print_recordings(recordings)
 
     #cache_file = os.path.join(ytvbot_dir, 'cache')
     #write_links_to_file(recordings, cache_file)
 
-    recordings_list = []
-    for recording in recordings:
-        recordings_list.append(recording.dict())
 
     if link_output:
         with open(link_output, 'w'):
             os.utime(link_output, None)
         write_links_to_file(recordings, link_output)
 
-    if json_file:
-        logger.debug("Writing json file to: %s" % link_output)
-        write_json_file(recordings_list, link_output)
-
     if download_files:
         logger.info("Start download recordings")
         download_recordings(recordings, output_dir, progress_bar=progress_bar)
-        with open(output_file, 'w') as f:
-            json.dumps(recordings, f, indent=4, sort_keys=True, ensure_ascii=False)
 
 logger = logging.getLogger('ytvbot')
 logger.setLevel(loglevel)

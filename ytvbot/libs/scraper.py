@@ -37,6 +37,7 @@ class Recording:
             self.stop_date.strftime('%Y-%m-%d:%H:%M'))
         recording_list[u'genre'] = self.genre
         recording_list[u'network'] = self.network
+        recording_list[u'information'] = self.information
 
         return recording_list
 
