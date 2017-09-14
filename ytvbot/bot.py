@@ -138,7 +138,7 @@ def download_recordings(links, output_dir=None, progress_bar=False):
             if item.show_name:
                 output_file = os.path.join(item.show_name, filename)
                 if not os.path.exists(item.show_name):
-                    os.mkdir(item.show_name)
+                    os.mkdir(str(item.show_name))
 
 
         if item.information:
@@ -262,11 +262,13 @@ def main():
                 f.write(json.dumps(recordings_list, f, indent=2,
                     sort_keys=True, ensure_ascii=False))
 
-    print_recordings(recordings)
+    if recordings:
+        print_recordings(recordings)
+    else:
+        logger.debug('No recordings found to print')
 
     #cache_file = os.path.join(ytvbot_dir, 'cache')
     #write_links_to_file(recordings, cache_file)
-
 
     if link_output:
         with open(link_output, 'w'):

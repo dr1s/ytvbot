@@ -144,7 +144,7 @@ class Scraper:
         return links
 
 
-    def get_showname_from_recording(self, url):
+    def get_recording_showname(self, url):
 
         show_name = None
         if not self.browser.current_url == url:
@@ -207,7 +207,7 @@ class Scraper:
             desc_list = tmp.text.split()
 
             genre = desc_list[6].strip(',')
-            if len(desc_list) > 6:
+            if len(desc_list) > 7:
                 genre += " " + desc_list[7]
 
         except NoSuchElementException:
@@ -254,7 +254,7 @@ class Scraper:
     def get_recording_from_url(self, url):
 
         links = self.get_recording_links(url)
-        name = self.get_showname_from_recording(url)
+        name = self.get_recording_showname(url)
         information = self.get_recording_information(url)
         recording_dates = self.get_recording_dates(url)
         genre = self.get_recording_genre(url)
