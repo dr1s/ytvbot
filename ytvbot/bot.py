@@ -73,12 +73,12 @@ def select_download_link(   recording,
 
 def write_information_file(output_file, show_name, informations):
     if not os.path.isfile(output_file):
-        with open(info_file, "w") as f:
+        with open(output_file, "w") as f:
             f.write("%s\n\n" % show_name)
             for i in informations:
                 f.write("%s\n\n" % textwrap.fill(i))
     else:
-        logger.debug("information file already exists: %s" % info_file)
+        logger.debug("information file already exists: %s" % output_file)
 
 
 def get_recordings(search=None):
