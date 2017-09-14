@@ -1,5 +1,6 @@
 import json
 import datetime
+import codecs
 from scraper import Recording
 
 def import_dict_recording(rec):
@@ -13,7 +14,7 @@ def import_dict_recording(rec):
     return recording
 
 def import_json_file(json_file):
-    with open(json_file) as f:
+    with codecs.open(json_file, "r", "utf-8") as f:
         rec_list = json.load(f)
     recordings = []
     for rec in rec_list:

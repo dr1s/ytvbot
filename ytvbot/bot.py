@@ -9,11 +9,12 @@ import logging
 import fileDownloader
 import textwrap
 import json
+import codecs
 from prettytable import PrettyTable
 
 from libs.browser import Browser
 from libs.scraper import Scraper
-from libs.importer import import_json
+from libs.importer import import_json_file
 
 from selenium.common.exceptions import WebDriverException
 from urllib2 import HTTPError
@@ -78,7 +79,7 @@ def select_download_link(   recording,
 
 def write_information_file(output_file, show_name, informations):
     if not os.path.isfile(output_file):
-        with open(output_file, "w") as f:
+        with codecs.open(output_file, "w", "utf-8") as f:
             f.write("%s\n\n" % show_name)
             for i in informations:
                 f.write("%s\n\n" % textwrap.fill(i))
@@ -257,7 +258,7 @@ def main():
             recordings_list = []
             for recording in recordings:
                 recordings_list.append(recording.dict())
-            with open(json_file, 'w') as f:
+            with codecs.open(json_file, 'w', 'utf-8') as f:
                 f.write(json.dumps(recordings_list, f, indent=2,
                     sort_keys=True, ensure_ascii=False))
 
