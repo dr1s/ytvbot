@@ -15,6 +15,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import NoSuchElementException
@@ -46,7 +47,12 @@ class Browser:
             self.logger.info(
                 'MacOS or Windows detected, can\'t start headless mode')
 
-        self.browser = webdriver.Firefox()
+        #Disable images to speed up loading times
+        firefox_profile = FirefoxProfile()
+        firefox_profile.set_preference('permissions.default.image', 2)
+        firefox_profile.set_preference('permissions.default.stylesheet', 2)
+        self.browser = webdriver.Firefox(firefox_profile)
+
         self.logged_in = False
 
         self.timeout = timeout

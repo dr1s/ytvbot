@@ -2,11 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import os
+import io
 import sys
 import getopt
 import logging
 import fileDownloader
 import textwrap
+import datetime
+import json
+from prettytable import PrettyTable
 
 from libs.browser import Browser
 from libs.scraper import Scraper
@@ -35,6 +39,7 @@ def usage():
     print(" -l | --links [output_file]: Save links in this file")
     print(" -# | --progress: show progress bar when downloading files")
     print(" -s | --search [show_name]: only look for show_name")
+    print(" -j | --json [output_file]: save results as json file")
 
 def setup_dir():
 
@@ -168,12 +173,33 @@ def write_links_to_file(recordings, output):
                 logger.debug('Link already found in file %s' % download_link)
 
 
+def print_recordings(recordings):
+    pt = PrettyTable(['id', 'show name', 'date', 'start time',
+            'end time', 'network', 'genre'])
+    for recording in recordings:
+        rec_list = []
+        start_date = recording.start_date.strftime('%Y-%m-%d')
+        start_time = recording.start_date.strftime('%H:%M')
+        stop_time = recording.stop_date.strftime('%H:%M')
+
+        rec_list.append(recording.id)
+        rec_list.append(recording.show_name)
+        rec_list.append(start_date)
+        rec_list.append(start_time)
+        rec_list.append(stop_time)
+        rec_list.append(recording.network)
+        rec_list.append(recording.genre)
+        pt.add_row(rec_list)
+    print(pt)
+
+
 def main():
 
     output_dir = None
     link_output = None
     download_files = True
     progress_bar = False
+    json_file = None
 
     try:
         long = ["help", "output=", "links=", "user=", "password=",
@@ -208,6 +234,8 @@ def main():
         elif o in ("-s", "--search"):
             global search
             search = a
+        elif o in ("-j", "--json"):
+            json_file = os.path.abspath(a)
         else:
             assert False, "unhandled option"
 
@@ -218,17 +246,29 @@ def main():
 
     recordings = get_recordings(search)
 
-    cache_file = os.path.join(ytvbot_dir, 'cache')
-    write_links_to_file(recordings, cache_file)
+    print_recordings(recordings)
+
+    #cache_file = os.path.join(ytvbot_dir, 'cache')
+    #write_links_to_file(recordings, cache_file)
+
+    recordings_list = []
+    for recording in recordings:
+        recordings_list.append(recording.dict())
 
     if link_output:
         with open(link_output, 'w'):
             os.utime(link_output, None)
         write_links_to_file(recordings, link_output)
 
-    if download_files:
-        download_recordings(recordings, output_dir, progress_bar=progress_bar)
+    if json_file:
+        logger.debug("Writing json file to: %s" % link_output)
+        write_json_file(recordings_list, link_output)
 
+    if download_files:
+        logger.info("Start download recordings")
+        download_recordings(recordings, output_dir, progress_bar=progress_bar)
+        with open(output_file, 'w') as f:
+            json.dumps(recordings, f, indent=4, sort_keys=True, ensure_ascii=False)
 
 logger = logging.getLogger('ytvbot')
 logger.setLevel(loglevel)

@@ -9,8 +9,9 @@ from selenium.common.exceptions import NoSuchElementException
 
 class Recording:
 
-    def __init__(   self, url, show_name, links , information=None,
-                    start_date=None, stop_date=None, genre=None ):
+    def __init__(   self, url, show_name, links, information=None,
+                    start_date=None, stop_date=None, genre=None,
+                    network=None):
         self.url = url
         self.show_name = show_name
         self.links = links
@@ -18,6 +19,26 @@ class Recording:
         self.start_date = start_date
         self.stop_date = stop_date
         self.genre = genre
+        self.network = network
+        self.id = url.rsplit('/', 1)[-1]
+
+
+
+    def dict(self):
+
+        recording_list = {}
+
+        recording_list[u'show_name'] = self.show_name
+        recording_list[u'url'] = self.url
+        recording_list[u'links'] = self.links
+        recording_list[u'start_date'] = unicode(
+            self.start_date.strftime('%Y-%m-%d:%H:%M'))
+        recording_list[u'stop_date'] = unicode(
+            self.stop_date.strftime('%Y-%m-%d:%H:%M'))
+        recording_list[u'genre'] = self.genre
+        recording_list[u'network'] = self.network
+
+        return recording_list
 
 
 
@@ -43,6 +64,7 @@ class Scraper:
         self.logged_in = False
         self.recorder_url = "https://www.youtv.de/videorekorder"
 
+
     def get_recording_link(self, title):
 
         href = None
@@ -58,6 +80,7 @@ class Scraper:
         else:
             return None
 
+
     def load_recordings_page(self):
 
         self.logger.info('Getting available recordings')
@@ -65,6 +88,7 @@ class Scraper:
         # Scroll to bottom to load all recordings
         self.browser.execute_script(
             "window.scrollTo(0, document.body.scrollHeight);")
+
 
     def get_available_recordings(self):
 
@@ -99,7 +123,7 @@ class Scraper:
         return recordings
 
 
-    def get_links_for_recording(self, url):
+    def get_recording_links(self, url):
 
         self.logger.info('Getting links from: %s' % url)
         if not self.browser.current_url == url:
@@ -153,16 +177,15 @@ class Scraper:
 
             date = desc_list[4]
             start_time = desc_list[1]
-            stop_time = desc_list[3].split(',')[0]
+            stop_time = desc_list[3].strip(',')
+
             start_tmp = date + ':' + start_time
             stop_tmp = date + ':' + stop_time
 
-            print repr(start_tmp)
-
             start_date = datetime.datetime.strptime(
-                str(start_tmp), "%d.%m.%Y:%H:%M")
+                start_tmp, "%d.%m.%Y:%H:%M")
             stop_date = datetime.datetime.strptime(
-                str(stop_tmp), "%d.%m.%Y:%H:%M")
+                stop_tmp, "%d.%m.%Y:%H:%M")
 
 
         except NoSuchElementException:
@@ -182,7 +205,9 @@ class Scraper:
                 "broadcast-details-header--content-channel-description")
             desc_list = tmp.text.split()
 
-            genre = desc_list[5]
+            genre = desc_list[6].strip(',')
+            if len(desc_list) > 6:
+                genre += " " + desc_list[7]
 
         except NoSuchElementException:
             self.logger.debug("No recording date found for: %s" % url)
@@ -219,7 +244,6 @@ class Scraper:
                 'broadcast-details-header--content-channel-logo')
             nw = nw_tag.find_element_by_tag_name("img")
             network = nw.get_attribute('alt')
-            print network
         except NoSuchElementException:
             self.logger.debug("No network name found for: %s" % url)
 
@@ -228,7 +252,7 @@ class Scraper:
 
     def get_recording_from_url(self, url):
 
-        links = self.get_links_for_recording(url)
+        links = self.get_recording_links(url)
         name = self.get_showname_from_recording(url)
         information = self.get_recording_information(url)
         recording_dates = self.get_recording_dates(url)
@@ -237,7 +261,7 @@ class Scraper:
 
         recording = Recording(url, name, links, information,
             recording_dates[0], recording_dates[1],
-            genre)
+            genre, network)
         return recording
 
 
@@ -252,4 +276,6 @@ class Scraper:
         for url in recordings_urls:
             recordings.append(self.get_recording_from_url(url))
 
+        #reverse recordings list as the last one is the oldest one
+        recordings.reverse()
         return recordings
