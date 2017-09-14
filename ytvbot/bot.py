@@ -95,7 +95,7 @@ def get_recordings(search=None):
     return recordings
 
 
-def resume(download_link, output_file):
+def resume(downloader, download_link, output_file):
 
     tmp_file = output_file + ".download"
 
@@ -144,7 +144,7 @@ def download_recordings(links, output_dir=None, progress_bar=False):
                     progress_bar=progress_bar)
 
         if os.path.isfile(output_file):
-            resume(download_link, output_file)
+            resume(downloader, download_link, output_file)
         else:
             logger.info('Downloading: %s' % download_link)
             tmp_file = output_file + ".download"

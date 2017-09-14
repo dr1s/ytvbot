@@ -2,17 +2,22 @@
 
 import sys
 import logging
+import datetime
 
 from selenium.common.exceptions import NoSuchElementException
 
 
 class Recording:
 
-    def __init__(self, url, show_name, links , information=None):
+    def __init__(   self, url, show_name, links , information=None,
+                    start_date=None, stop_date=None, genre=None ):
         self.url = url
         self.show_name = show_name
         self.links = links
         self.information = information
+        self.start_date = start_date
+        self.stop_date = stop_date
+        self.genre = genre
 
 
 
@@ -131,12 +136,57 @@ class Scraper:
         return show_name
 
 
-    def get_information_from_recording(self, url):
-
-        information = []
+    def get_recording_dates(self, url):
 
         if not self.browser.current_url is url:
             self.browser.get(url)
+
+        try:
+            date_tmp = self.browser.find_element_by_class_name(
+                "broadcast-details-header--content-channel-description")
+            desc_list = date_tmp.text.split()
+
+            date = desc_list[4]
+            start_time = desc_list[1]
+            stop_time = desc_list[3].split(',')[0]
+            start_tmp = date + ':' + start_time
+            stop_tmp = date + ':' + stop_time
+
+            print repr(start_tmp)
+
+            start_date = datetime.datetime.strptime(
+                str(start_tmp), "%d.%m.%Y:%H:%M")
+            stop_date = datetime.datetime.strptime(
+                str(stop_tmp), "%d.%m.%Y:%H:%M")
+
+
+        except NoSuchElementException:
+            self.logger.debug("No recording date found for: %s" % url)
+
+        return [start_date, stop_date]
+
+    def get_recording_genre(self, url):
+
+        genre = None
+        if not self.browser.current_url is url:
+            self.browser.get(url)
+
+        try:
+            tmp = self.browser.find_element_by_class_name(
+                "broadcast-details-header--content-channel-description")
+            desc_list = tmp.text.split()
+
+            genre = desc_list[5]
+
+        except NoSuchElementException:
+            self.logger.debug("No recording date found for: %s" % url)
+
+        return genre
+
+
+    def get_information_from_recording(self, url):
+
+        information = []
 
         try:
             information_tmp = self.browser.find_element_by_class_name(
@@ -153,7 +203,12 @@ class Scraper:
         links = self.get_links_for_recording(url)
         name = self.get_showname_from_recording(url)
         information = self.get_information_from_recording(url)
-        recording = Recording(url, name, links, information)
+        recording_dates = self.get_recording_dates(url)
+        genre = self.get_recording_genre(url)
+
+        recording = Recording(url, name, links, information,
+            recording_dates[0], recording_dates[1],
+            genre)
         return recording
 
 
