@@ -1,5 +1,6 @@
 import datetime
-
+import codecs
+import os
 
 class Recording:
 
@@ -43,22 +44,68 @@ class Recording:
         return recording_list
 
 
-    def list(self):
-
-        start_date = self.start_date.strftime('%Y-%m-%d')
-        start_time = self.start_date.strftime('%H:%M')
-        stop_time = self.stop_date.strftime('%H:%M')
+    def list(self, fields=[ 'id', 'show_name', 'title',
+                            'start_time', 'end_time']):
 
         rec_list = []
-        rec_list.append(self.id)
-        rec_list.append(self.show_name)
-        rec_list.append(self.title)
-        rec_list.append(start_date)
-        rec_list.append(start_time)
-        rec_list.append(stop_time)
-        rec_list.append(self.network)
-        rec_list.append(self.genre)
-        rec_list.append(self.season)
-        rec_list.append(self.episode)
+        start_date = self.start_date.strftime('%Y-%m-%d')
+        start_time = self.start_date.strftime('%H:%M')
+        end_time = self.start_date.strftime('%H:%M')
+
+        for i in fields:
+            if i == 'name':
+                rec_list.append(self.show_name)
+            elif i == 'id':
+                rec_list.append(self.id)
+            elif i == 'url':
+                rec_list.append(self.url)
+            elif i == 'links':
+                rec_list.append(self.links)
+            elif i == 'date':
+                rec_list.append(start_date)
+            elif i == 'start_time':
+                rec_list.append(start_time)
+            elif i == 'end_time':
+                rec_list.append(end_time)
+            elif i == 'genre':
+                rec_list.append(self.genre)
+            elif i == 'network':
+                rec_list.append(self.network)
+            elif i == 'information':
+                rec_list.append(self.information)
+            elif i == 'title':
+                rec_list.append(self.title)
+            elif i == 'episode':
+                rec_list.append(self.episode)
+            elif i == 'season':
+                rec_list.append(self.season)
 
         return rec_list
+
+
+    def write_information_file(self, output_file):
+
+        date = self.start_date.strftime('%d.%m.%Y')
+        start_time = self.start_date.strftime('%H:%M')
+        end_time = self.stop_date.strftime('%H:%M')
+        if not os.path.isfile(output_file):
+            with codecs.open(output_file, "w", "utf-8") as f:
+                f.write("%s\n" % self.show_name)
+                if self.title:
+                    f.write("%s" % self.title)
+                if self.season:
+                    f.write("Staffel: %s" % self.season)
+                if self.episode:
+                    f.write("Episode: %s" % self.episode)
+                if self.episode or self.season:
+                    f.write("\n")
+                f.write("\n")
+                f.write("Sender: %s\n" % self.network)
+                f.write("Sendezeit: %s %s - %s\n" %
+                    (date, start_time, end_time))
+                f.write("Genre: %s\n\n" % self.genre)
+
+                for i in self.information:
+                    f.write("%s\n\n" % textwrap.fill(i))
+        else:
+            logger.debug("information file already exists: %s" % output_file)

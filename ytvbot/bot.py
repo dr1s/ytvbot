@@ -77,34 +77,6 @@ def select_download_link(   recording,
     return selected
 
 
-def write_information_file(output_file, item):
-
-    date = item.start_date.strftime('%d.%m.%Y')
-    start_time = item.start_date.strftime('%H:%M')
-    end_time = item.stop_date.strftime('%H:%M')
-    if not os.path.isfile(output_file):
-        with codecs.open(output_file, "w", "utf-8") as f:
-            f.write("%s\n" % item.show_name)
-            if item.title:
-                f.write("%s" % item.title)
-            if item.season:
-                f.write("Staffel: %s" % item.season)
-            if item.episode:
-                f.write("Episode: %s" % item.episode)
-            if item.episode or item.season:
-                f.write("\n")
-            f.write("\n")
-            f.write("Sender: %s\n" % item.network)
-            f.write("Sendezeit: %s %s - %s\n" %
-                (date, start_time, end_time))
-            f.write("Genre: %s\n\n" % item.genre)
-
-            for i in item.information:
-                f.write("%s\n\n" % textwrap.fill(i))
-    else:
-        logger.debug("information file already exists: %s" % output_file)
-
-
 def get_recordings(search=None):
     recordings = []
     br = Browser(config_dir=ytvbot_dir, loglevel=loglevel)
@@ -135,47 +107,49 @@ def resume(downloader, download_link, output_file):
         logger.debug("File already finished downloading: %s" %
             output_file)
 
+def download_recording(item, output_dir, progress_bar=False):
+    download_link = select_download_link(item)
+    filename = os.path.basename(download_link)
+    output_file = filename
+    if output_dir:
+        if item.show_name:
+            output_tmp = os.path.join(output_dir, item.show_name)
+            if not os.path.exists(output_tmp):
+                os.mkdir(output_tmp)
+            output_file = os.path.join(output_tmp, filename)
+        else:
+            output_file = os.path.join(output_dir, filename)
+    else:
+        if item.show_name:
+            output_file = os.path.join(item.show_name, filename)
+            if not os.path.exists(item.show_name):
+                os.mkdir(str(item.show_name))
+
+
+    if item.information:
+        info_file = output_file.split('.')[0] + ".txt"
+        item.write_information_file(info_file)
+
+
+    downloader = fileDownloader.DownloadFile(download_link, output_file,
+                progress_bar=progress_bar)
+
+    if os.path.isfile(output_file):
+        resume(downloader, download_link, output_file)
+    else:
+        logger.info('Downloading: %s' % download_link)
+        tmp_file = output_file + ".download"
+        with open(tmp_file, 'w'):
+            os.utime(tmp_file, None)
+        downloader.download()
+        os.remove(tmp_file)
 
 
 
 def download_recordings(links, output_dir=None, progress_bar=False):
 
     for item in links:
-        download_link = select_download_link(item)
-        filename = os.path.basename(download_link)
-        output_file = filename
-        if output_dir:
-            if item.show_name:
-                output_tmp = os.path.join(output_dir, item.show_name)
-                if not os.path.exists(output_tmp):
-                    os.mkdir(output_tmp)
-                output_file = os.path.join(output_tmp, filename)
-            else:
-                output_file = os.path.join(output_dir, filename)
-        else:
-            if item.show_name:
-                output_file = os.path.join(item.show_name, filename)
-                if not os.path.exists(item.show_name):
-                    os.mkdir(str(item.show_name))
-
-
-        if item.information:
-            info_file = output_file.split('.')[0] + ".txt"
-            write_information_file(info_file, item)
-
-
-        downloader = fileDownloader.DownloadFile(download_link, output_file,
-                    progress_bar=progress_bar)
-
-        if os.path.isfile(output_file):
-            resume(downloader, download_link, output_file)
-        else:
-            logger.info('Downloading: %s' % download_link)
-            tmp_file = output_file + ".download"
-            with open(tmp_file, 'w'):
-                os.utime(tmp_file, None)
-            downloader.download()
-            os.remove(tmp_file)
+        download_recording(item, output_dir, progress_bar)
 
 
 def write_links_to_file(recordings, output):
@@ -192,11 +166,11 @@ def write_links_to_file(recordings, output):
                 logger.debug('Link already found in file %s' % download_link)
 
 
-def print_recordings(recordings):
-    pt = PrettyTable(['id', 'show name', 'title', 'date', 'start time',
-            'end time', 'network', 'genre', 'season', 'episode'])
+def print_recordings(recordings, fields=['id', 'name', 'title',
+        'date', 'start_time', 'end_time', 'network']):
+    pt = PrettyTable(fields)
     for recording in recordings:
-        pt.add_row(recording.list())
+        pt.add_row(recording.list(fields))
     print(pt)
 
 
@@ -210,7 +184,7 @@ def main():
 
     try:
         long = ["help", "output=", "links=", "user=", "password=",
-                "config-dir=", "no-download", "progress", "search",
+                "config-dir=", "no-download", "progress", "search=",
                 "json="]
 
         opts, args = getopt.getopt(sys.argv[1:], "hno:l:u:p:c:#s:j:", long )
