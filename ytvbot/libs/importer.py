@@ -1,7 +1,7 @@
 import json
 import datetime
 import codecs
-from scraper import Recording
+from recording import Recording
 
 def import_dict_recording(rec):
     start_date = datetime.datetime.strptime(

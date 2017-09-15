@@ -84,7 +84,16 @@ def write_information_file(output_file, item):
     end_time = item.stop_date.strftime('%H:%M')
     if not os.path.isfile(output_file):
         with codecs.open(output_file, "w", "utf-8") as f:
-            f.write("%s\n\n" % item.show_name)
+            f.write("%s\n" % item.show_name)
+            if item.title:
+                f.write("%s" % item.title)
+            if item.season:
+                f.write("Staffel: %s" % item.season)
+            if item.episode:
+                f.write("Episode: %s" % item.episode)
+            if item.episode or item.season:
+                f.write("\n")
+            f.write("\n")
             f.write("Sender: %s\n" % item.network)
             f.write("Sendezeit: %s %s - %s\n" %
                 (date, start_time, end_time))
