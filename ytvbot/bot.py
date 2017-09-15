@@ -77,11 +77,21 @@ def select_download_link(   recording,
 
     return selected
 
-def write_information_file(output_file, show_name, informations):
+
+def write_information_file(output_file, item):
+
+    date = item.start_date.strftime('%d.%m.%Y')
+    start_time = item.start_date.strftime('%H:%M')
+    end_time = item.stop_date.strftime('%H:%M')
     if not os.path.isfile(output_file):
         with codecs.open(output_file, "w", "utf-8") as f:
-            f.write("%s\n\n" % show_name)
-            for i in informations:
+            f.write("%s\n\n" % item.show_name)
+            f.write("Sender: %s\n" % item.network)
+            f.write("Sendezeit: %s %s - %s\n" %
+                (date, start_time, end_time))
+            f.write("Genre: %s\n\n" % item.genre)
+
+            for i in item.information:
                 f.write("%s\n\n" % textwrap.fill(i))
     else:
         logger.debug("information file already exists: %s" % output_file)
@@ -143,7 +153,7 @@ def download_recordings(links, output_dir=None, progress_bar=False):
 
         if item.information:
             info_file = output_file.split('.')[0] + ".txt"
-            write_information_file(info_file, item.information, item.show_name)
+            write_information_file(info_file, item)
 
 
         downloader = fileDownloader.DownloadFile(download_link, output_file,

@@ -208,7 +208,11 @@ class Scraper:
 
             genre = desc_list[6].strip(',')
             if len(desc_list) > 7:
-                genre += " " + desc_list[7]
+                for i in range(7, len(desc_list)):
+                    if desc_list[i] in ['Episode', 'Folge', 'Staffel']:
+                        break
+                    else:
+                        genre += " " + desc_list[i].strip(',')
 
         except NoSuchElementException:
             self.logger.debug("No recording date found for: %s" % url)
