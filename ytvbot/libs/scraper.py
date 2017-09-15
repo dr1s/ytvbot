@@ -9,18 +9,22 @@ from selenium.common.exceptions import NoSuchElementException
 
 class Recording:
 
-    def __init__(   self, url, show_name, links, information=None,
-                    start_date=None, stop_date=None, genre=None,
-                    network=None):
+    def __init__(   self, url, show_name, links, title=None,
+                    information=None, start_date=None,
+                    stop_date=None, genre=None,
+                    network=None, season=None, episode=None):
         self.url = url
         self.show_name = show_name
         self.links = links
+        self.title = title
         self.information = information
         self.start_date = start_date
         self.stop_date = stop_date
         self.genre = genre
         self.network = network
         self.id = url.rsplit('/', 1)[-1]
+        self.season = season
+        self.episode = episode
 
 
 
@@ -38,9 +42,31 @@ class Recording:
         recording_list[u'genre'] = self.genre
         recording_list[u'network'] = self.network
         recording_list[u'information'] = self.information
+        recording_list[u'season'] = self.season
+        recording_list[u'episode'] = self.episode
+        recording_list[u'title'] = self.title
 
         return recording_list
 
+    def list(self):
+
+        start_date = self.start_date.strftime('%Y-%m-%d')
+        start_time = self.start_date.strftime('%H:%M')
+        stop_time = self.stop_date.strftime('%H:%M')
+
+        rec_list = []
+        rec_list.append(self.id)
+        rec_list.append(self.show_name)
+        rec_list.append(self.title)
+        rec_list.append(start_date)
+        rec_list.append(start_time)
+        rec_list.append(stop_time)
+        rec_list.append(self.network)
+        rec_list.append(self.genre)
+        rec_list.append(self.season)
+        rec_list.append(self.episode)
+
+        return rec_list
 
 
 class Scraper:
@@ -151,7 +177,8 @@ class Scraper:
             self.browser.get(url)
 
         try:
-            show_tmp = self.browser.find_element_by_class_name("broadcast-details-header--content")
+            show_tmp = self.browser.find_element_by_class_name(
+                "broadcast-details-header--content")
             show_name = show_tmp.find_element_by_tag_name('a').text.title()
         except NoSuchElementException:
             self.logger.debug("Cant find show link for: %s" % url)
@@ -164,6 +191,23 @@ class Scraper:
             except NoSuchElementException:
                 self.logger.debug("Can't find any show name for: %s" % url)
         return show_name
+
+
+    def get_recording_title(self, url):
+
+        title = None
+
+        if not self.browser.current_url == url:
+            self.browser.get(url)
+
+        try:
+            title_tmp = self.browser.find_element_by_class_name(
+                "broadcast-details-header--content")
+            title = title_tmp.find_element_by_tag_name('small').text
+        except NoSuchElementException:
+            self.logger.debug('Cant find title: %s' % url)
+
+        return title
 
 
     def get_recording_dates(self, url):
@@ -220,6 +264,47 @@ class Scraper:
         return genre
 
 
+    def get_recording_episode(self, url):
+
+        episode = None
+
+        if not self.browser.current_url == url:
+            self.browser.get(url)
+
+        try:
+            tmp = self.browser.find_element_by_class_name(
+                "broadcast-details-header--content-channel-description")
+            desc_list = tmp.text.split()
+            for i in range(0, len(desc_list)):
+                if desc_list[i].strip(',') in ['Episode', 'Folge']:
+                    episode = desc_list[i+1]
+        except NoSuchElementException:
+            self.logger.debug("Can't find episode number: %s" % url)
+
+        return episode
+
+
+    def get_recording_season(self, url):
+
+        season = None
+
+        if not self.browser.current_url == url:
+            self.browser.get(url)
+
+        try:
+            tmp = self.browser.find_element_by_class_name(
+                "broadcast-details-header--content-channel-description")
+            desc_list = tmp.text.split()
+            for i in range(0, len(desc_list)):
+                desc_list[i]
+                if desc_list[i].strip(',') in ['Staffel', 'Season']:
+                    season = desc_list[i+1]
+        except NoSuchElementException:
+            self.logger.debug("Can't find season number: %s" % url)
+
+        return season
+
+
     def get_recording_information(self, url):
 
         if not self.browser.current_url == url:
@@ -259,14 +344,17 @@ class Scraper:
 
         links = self.get_recording_links(url)
         name = self.get_recording_showname(url)
+        title = self.get_recording_title(url)
         information = self.get_recording_information(url)
         recording_dates = self.get_recording_dates(url)
         genre = self.get_recording_genre(url)
         network = self.get_recording_network(url)
+        episode = self.get_recording_episode(url)
+        season = self.get_recording_season(url)
 
-        recording = Recording(url, name, links, information,
-            recording_dates[0], recording_dates[1],
-            genre, network)
+        recording = Recording(url, name, links, title, information,
+            recording_dates[0], recording_dates[1], genre, network,
+            season, episode)
         return recording
 
 

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import io
 import sys
 import getopt
 import logging
@@ -185,22 +184,10 @@ def write_links_to_file(recordings, output):
 
 
 def print_recordings(recordings):
-    pt = PrettyTable(['id', 'show name', 'date', 'start time',
-            'end time', 'network', 'genre'])
+    pt = PrettyTable(['id', 'show name', 'title', 'date', 'start time',
+            'end time', 'network', 'genre', 'season', 'episode'])
     for recording in recordings:
-        rec_list = []
-        start_date = recording.start_date.strftime('%Y-%m-%d')
-        start_time = recording.start_date.strftime('%H:%M')
-        stop_time = recording.stop_date.strftime('%H:%M')
-
-        rec_list.append(recording.id)
-        rec_list.append(recording.show_name)
-        rec_list.append(start_date)
-        rec_list.append(start_time)
-        rec_list.append(stop_time)
-        rec_list.append(recording.network)
-        rec_list.append(recording.genre)
-        pt.add_row(rec_list)
+        pt.add_row(recording.list())
     print(pt)
 
 

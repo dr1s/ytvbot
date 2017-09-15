@@ -9,7 +9,9 @@ def import_dict_recording(rec):
     stop_date = datetime.datetime.strptime(
         rec['stop_date'], "%Y-%m-%d:%H:%M")
     recording = Recording(rec['url'], rec['show_name'], rec['links'],
-        rec['information'], start_date, stop_date, rec['genre'], rec['network'])
+        rec['title'], rec['information'], start_date, stop_date,
+        rec['genre'], rec['network'],
+        rec['episode'], rec['season'])
 
     return recording
 
