@@ -1,6 +1,8 @@
 import datetime
 import codecs
 import os
+import textwrap
+import logging
 
 class Recording:
 
@@ -21,7 +23,15 @@ class Recording:
         self.season = season
         self.episode = episode
 
-
+        logger = logging.getLogger('recording')
+        logger.setLevel(logging.INFO)
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.INFO)
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        ch.setFormatter(formatter)
+        logger.addHandler(ch)
+        self.logger = logger
 
     def dict(self):
 
@@ -108,4 +118,4 @@ class Recording:
                 for i in self.information:
                     f.write("%s\n\n" % textwrap.fill(i))
         else:
-            logger.debug("information file already exists: %s" % output_file)
+            self.logger.debug("information file already exists: %s" % output_file)

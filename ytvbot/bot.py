@@ -6,7 +6,6 @@ import sys
 import getopt
 import logging
 import fileDownloader
-import textwrap
 import json
 import codecs
 from prettytable import PrettyTable
