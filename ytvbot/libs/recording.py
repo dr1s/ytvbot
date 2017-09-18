@@ -80,8 +80,8 @@ class Recording:
         elif name == 'end_time':
             if not sep:
                 sep = ':'
-            hour = self.start_date.strftime('%H')
-            minute = self.start_date.strftime('%M')
+            hour = self.stop_date.strftime('%H')
+            minute = self.stop_date.strftime('%M')
             return "%s%s%s" % (hour, sep, minute)
         elif name == 'genre':
             return self.genre
