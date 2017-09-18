@@ -1,6 +1,6 @@
 # ytvbot
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a043d598ed054bc39920accaee240001)](https://www.codacy.com/app/dr1s/ytvbot?utm_source=github.com&utm_medium=referral&utm_content=dr1s/ytvbot&utm_campaign=badger)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c19662d802b14473b06a6db8b97f3950)](https://www.codacy.com/app/dr1s/ytvbot?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dr1s/ytvbot&amp;utm_campaign=Badge_Grade)
 
 Download recordings form youtv.de
 
