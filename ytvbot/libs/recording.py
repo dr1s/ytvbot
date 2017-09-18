@@ -104,31 +104,36 @@ class Recording:
         return rec_list
 
 
-    def write_information_file(self, output_file):
+    def __write_data_to_file__(self, f):
 
         date = self.get_attribute('date')
         start_time = self.get_attribute('start_time')
         end_time = self.get_attribute('end_time')
 
+        f.write("%s\n" % self.show_name)
+        if self.title:
+            f.write("%s" % self.title)
+        if self.season:
+            f.write("Staffel: %s" % self.season)
+        if self.episode:
+            f.write("Episode: %s" % self.episode)
+        if self.episode or self.season:
+            f.write("\n")
+
+        f.write("\n")
+        f.write("Sender: %s\n" % self.network)
+        f.write("Sendezeit: %s %s - %s\n" %
+            (date, start_time, end_time))
+        f.write("Genre: %s\n\n" % self.genre)
+
+        for i in self.information:
+            f.write("%s\n\n" % textwrap.fill(i))
+
+    def write_information_file(self, output_file):
+
         if not os.path.isfile(output_file):
             with codecs.open(output_file, "w", "utf-8") as f:
-                f.write("%s\n" % self.show_name)
-                if self.title:
-                    f.write("%s" % self.title)
-                if self.season:
-                    f.write("Staffel: %s" % self.season)
-                if self.episode:
-                    f.write("Episode: %s" % self.episode)
-                if self.episode or self.season:
-                    f.write("\n")
-                f.write("\n")
-                f.write("Sender: %s\n" % self.network)
-                f.write("Sendezeit: %s %s - %s\n" %
-                    (date, start_time, end_time))
-                f.write("Genre: %s\n\n" % self.genre)
-
-                for i in self.information:
-                    f.write("%s\n\n" % textwrap.fill(i))
+                self.__write_data_to_file__(f)
         else:
             self.logger.debug("information file already exists: %s" % output_file)
 
