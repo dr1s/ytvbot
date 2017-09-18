@@ -59,10 +59,8 @@ class Scraper:
 
     def get_available_recordings(self):
 
-        if not self.browser.current_url == self.recorder_url:
-            self.load_recordings_page()
-
         recordings = []
+
         titles = self.browser.find_elements_by_class_name(
             'broadcasts-table-cell-title')
         for title in titles:
@@ -77,10 +75,8 @@ class Scraper:
 
     def get_recordings_for_name(self, name):
 
-        if not self.browser.current_url == self.recorder_url:
-            self.load_recordings_page()
-
         recordings = []
+
         titles = self.browser.find_elements_by_class_name(
             'broadcasts-table-cell-title')
 
@@ -100,8 +96,6 @@ class Scraper:
     def get_recording_links(self, url):
 
         self.logger.info('Getting links from: %s' % url)
-        if not self.browser.current_url == url:
-            self.browser.get(url)
 
         downloads =  self.browser.find_elements_by_partial_link_text(
             'Definition')
@@ -120,8 +114,6 @@ class Scraper:
     def get_recording_showname(self, url):
 
         show_name = None
-        if not self.browser.current_url == url:
-            self.browser.get(url)
 
         try:
             show_tmp = self.browser.find_element_by_class_name(
@@ -144,9 +136,6 @@ class Scraper:
 
         title = None
 
-        if not self.browser.current_url == url:
-            self.browser.get(url)
-
         try:
             title_tmp = self.browser.find_element_by_class_name(
                 "broadcast-details-header--content")
@@ -158,9 +147,6 @@ class Scraper:
 
 
     def get_recording_dates(self, url):
-
-        if not self.browser.current_url == url:
-            self.browser.get(url)
 
         try:
             date_tmp = self.browser.find_element_by_class_name(
@@ -189,8 +175,6 @@ class Scraper:
     def get_recording_genre(self, url):
 
         genre = None
-        if not self.browser.current_url == url:
-            self.browser.get(url)
 
         try:
             tmp = self.browser.find_element_by_class_name(
@@ -215,9 +199,6 @@ class Scraper:
 
         episode = None
 
-        if not self.browser.current_url == url:
-            self.browser.get(url)
-
         try:
             tmp = self.browser.find_element_by_class_name(
                 "broadcast-details-header--content-channel-description")
@@ -235,9 +216,6 @@ class Scraper:
 
         season = None
 
-        if not self.browser.current_url == url:
-            self.browser.get(url)
-
         try:
             tmp = self.browser.find_element_by_class_name(
                 "broadcast-details-header--content-channel-description")
@@ -252,9 +230,6 @@ class Scraper:
 
 
     def get_recording_information(self, url):
-
-        if not self.browser.current_url == url:
-            self.browser.get(url)
 
         information = []
 
@@ -271,9 +246,6 @@ class Scraper:
 
     def get_recording_network(self, url):
 
-        if not self.browser.current_url == url:
-            self.browser.get(url)
-
         network = None
         try:
             nw_tag = self.browser.find_element_by_class_name(
@@ -287,6 +259,9 @@ class Scraper:
 
 
     def get_recording_from_url(self, url):
+
+        if not self.browser.current_url == url:
+            self.browser.get(url)
 
         links = self.get_recording_links(url)
         name = self.get_recording_showname(url)
@@ -307,6 +282,10 @@ class Scraper:
     def get_recordings(self, search=None):
         recordings = []
         recordings_urls= []
+
+        if not self.browser.current_url == self.recorder_url:
+            self.load_recordings_page()
+
         if search:
             recordings_urls = self.get_recordings_for_name(search)
         else:
