@@ -1,4 +1,7 @@
 # ytvbot
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a043d598ed054bc39920accaee240001)](https://www.codacy.com/app/dr1s/ytvbot?utm_source=github.com&utm_medium=referral&utm_content=dr1s/ytvbot&utm_campaign=badger)
+
 Download recordings form youtv.de
 
 ## Dependencies
