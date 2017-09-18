@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import datetime
 
 from selenium.common.exceptions import NoSuchElementException
@@ -44,23 +43,7 @@ class Scraper:
             "window.scrollTo(0, document.body.scrollHeight);")
 
 
-    def get_available_recordings(self):
-
-        recordings = []
-
-        titles = self.browser.find_elements_by_class_name(
-            'broadcasts-table-cell-title')
-        for title in titles:
-            recording_tmp = self.get_recording_link(title)
-            if recording_tmp:
-                recordings.append(recording_tmp)
-
-        self.logger.info('Found %i available recordings' % len(recordings))
-
-        return recordings
-
-
-    def get_recordings_for_name(self, name):
+    def get_available_recordings(self, name=None):
 
         recordings = []
 
@@ -68,14 +51,20 @@ class Scraper:
             'broadcasts-table-cell-title')
 
         for title in titles:
-            title_tmp = None
-            try:
-                title_tmp = title.find_element_by_tag_name('b')
-            except NoSuchElementException:
-                pass
-            if title_tmp:
-                if name in title_tmp.text:
-                    recordings.append(self.get_recording_link(title))
+            if name:
+                title_tmp = None
+                try:
+                    title_tmp = title.find_element_by_tag_name('b')
+                except NoSuchElementException:
+                    pass
+                if title_tmp:
+                    if name in title_tmp.text:
+                        recordings.append(
+                            self.get_recording_link(title))
+            else:
+                recording_tmp = self.get_recording_link(title)
+                if recording_tmp:
+                    recordings.append(recording_tmp)
 
         return recordings
 
@@ -133,13 +122,22 @@ class Scraper:
         return title
 
 
-    def get_recording_dates(self, url):
-
+    def __get_desc_list__(self,url):
+        desc_list = None
         try:
             date_tmp = self.browser.find_element_by_class_name(
                 "broadcast-details-header--content-channel-description")
             desc_list = date_tmp.text.split()
+        except NoSuchElementException:
+            self.logger.debug("Can't find desc list: %s" % url)
+        return desc_list
 
+
+    def get_recording_dates(self, url):
+
+        desc_list = self.__get_desc_list__(url)
+
+        if desc_list:
             date = desc_list[4]
             start_time = desc_list[1]
             stop_time = desc_list[3].strip(',')
@@ -152,8 +150,7 @@ class Scraper:
             stop_date = datetime.datetime.strptime(
                 stop_tmp, "%d.%m.%Y:%H:%M")
 
-
-        except NoSuchElementException:
+        else:
             self.logger.debug("No recording date found for: %s" % url)
 
         return [start_date, stop_date]
@@ -162,12 +159,9 @@ class Scraper:
     def get_recording_genre(self, url):
 
         genre = None
+        desc_list = self.__get_desc_list__(url)
 
-        try:
-            tmp = self.browser.find_element_by_class_name(
-                "broadcast-details-header--content-channel-description")
-            desc_list = tmp.text.split()
-
+        if desc_list:
             genre = desc_list[6].strip(',')
             if len(desc_list) > 7:
                 for i in range(7, len(desc_list)):
@@ -176,7 +170,7 @@ class Scraper:
                     else:
                         genre += " " + desc_list[i].strip(',')
 
-        except NoSuchElementException:
+        else:
             self.logger.debug("No recording date found for: %s" % url)
 
         return genre
@@ -273,10 +267,8 @@ class Scraper:
         if not self.browser.current_url == self.recorder_url:
             self.load_recordings_page()
 
-        if search:
-            recordings_urls = self.get_recordings_for_name(search)
-        else:
-            recordings_urls = self.get_available_recordings()
+
+        recordings_urls = self.get_available_recordings(search)
 
         for url in recordings_urls:
             recordings.append(self.get_recording_from_url(url))

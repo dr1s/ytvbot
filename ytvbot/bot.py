@@ -4,7 +4,6 @@
 import os
 import sys
 import getopt
-import logging
 import fileDownloader
 import json
 import codecs
