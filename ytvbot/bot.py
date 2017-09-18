@@ -106,9 +106,10 @@ def resume(downloader, download_link, output_file):
         logger.debug("File already finished downloading: %s" %
             output_file)
 
+
 def download_recording(item, output_dir, progress_bar=False):
     download_link = select_download_link(item)
-    filename = os.path.basename(download_link)
+    filename = item.format_output_filename()
     output_file = filename
     if output_dir:
         if item.show_name:

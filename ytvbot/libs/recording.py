@@ -33,6 +33,31 @@ class Recording:
         logger.addHandler(ch)
         self.logger = logger
 
+
+    def get_start_time(self, sep=':'):
+        hour = self.start_date.strftime('%H')
+        minute = self.start_date.strftime('%M')
+        time = "%s%s%s" %(hour, sep, minute)
+
+        return time
+
+    def get_end_time(self, sep=':'):
+        hour = self.stop_date.strftime('%H')
+        minute = self.stop_date.strftime('%M')
+        time = "%s%s%s" %(hour, sep, minute)
+
+        return time
+
+    def get_date(self, sep='-'):
+        year = self.start_date.strftime('%Y')
+        month = self.start_date.strftime('%m')
+        day = self.start_date.strftime('%d')
+        time = "%s%s%s%s%s" % (year, sep, month, sep, day)
+
+        return time
+
+
+
     def dict(self):
 
         recording_list = {}
@@ -95,9 +120,10 @@ class Recording:
 
     def write_information_file(self, output_file):
 
-        date = self.start_date.strftime('%d.%m.%Y')
-        start_time = self.start_date.strftime('%H:%M')
-        end_time = self.stop_date.strftime('%H:%M')
+        date = self.get_date()
+        start_time = self.get_start_time()
+        end_time = self.get_end_time()
+
         if not os.path.isfile(output_file):
             with codecs.open(output_file, "w", "utf-8") as f:
                 f.write("%s\n" % self.show_name)
@@ -119,3 +145,10 @@ class Recording:
                     f.write("%s\n\n" % textwrap.fill(i))
         else:
             self.logger.debug("information file already exists: %s" % output_file)
+
+
+def format_output_filename(self):
+    fname = ("%s %s %s %s %s.mp4" % (self.show_name, self.title,
+            self.get_date(), self.get_start_time('_'), self.network))
+
+    return fname
