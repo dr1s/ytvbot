@@ -7,7 +7,6 @@ Download recordings form youtv.de
 ## Dependencies
 * selenium
 * pyvirtualdisplay
-* fileDownloader.py
 * psutil
 * geckodriver (https://github.com/mozilla/geckodriver/releases)
 * firefox

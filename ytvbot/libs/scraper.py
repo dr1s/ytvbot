@@ -122,8 +122,10 @@ class Scraper:
         return title
 
 
-    def __get_desc_list__(self,url):
+    def __get_desc_list__(self, url):
+
         desc_list = None
+
         try:
             date_tmp = self.browser.find_element_by_class_name(
                 "broadcast-details-header--content-channel-description")
@@ -176,7 +178,7 @@ class Scraper:
         return genre
 
 
-    def __get__next_item_from_desc_list(self, url, search):
+    def __get__next_item_from_desc_list__(self, url, search):
 
         item = None
         search_list = []
@@ -200,14 +202,14 @@ class Scraper:
 
     def get_recording_episode(self, url):
 
-        episode = self.__get__next_item_from_desc_list(url,
+        episode = self.__get__next_item_from_desc_list__(url,
             ['Episode', 'Folge'])
         return episode
 
 
     def get_recording_season(self, url):
 
-        season = self.__get__next_item_from_desc_list(url,
+        season = self.__get__next_item_from_desc_list__(url,
             ['Season', 'Staffel'])
         return season
 

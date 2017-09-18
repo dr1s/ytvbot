@@ -13,6 +13,7 @@ from libs.browser import Browser
 from libs.scraper import Scraper
 from libs.importer import import_json_file
 from libs.log import add_logger
+from libs import fileDownloader
 
 from selenium.common.exceptions import WebDriverException
 from urllib2 import HTTPError
