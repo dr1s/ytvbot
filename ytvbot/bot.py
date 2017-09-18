@@ -57,20 +57,25 @@ def setup_dir():
             os.utime(cache_filen, None)
 
 
-def select_download_link(   recording,
-                            quality_priority_list=['hd','hq','nq']):
+def select_download_link(recording, quality_priority='hd'):
 
     selected = None
     links = recording.links
     for link in links:
         link_found = False
-        for quality in quality_priority_list:
+        if type(quality_priority) == list:
+            for quality in quality_priority:
+                if quality in link:
+                    link_found = True
+                    selected = link
+                    break
+        else:
             if quality in link:
                 link_found = True
-                logger.debug('Selecting link: %s' % link)
                 selected = link
-                break
+
         if link_found:
+            logger.debug('Selecting link: %s' % selected)
             break
 
     return selected
@@ -84,7 +89,7 @@ def get_recordings(search=None):
         scraper = Scraper(br.browser, loglevel=loglevel)
         recordings = scraper.get_recordings(search)
         br.destroy()
-    except (KeyboardInterrupt, WebDriverException) as e:
+    except (KeyboardInterrupt, WebDriverException):
         if br:
             br.destroy()
     return recordings
@@ -108,7 +113,7 @@ def resume(downloader, download_link, output_file):
 
 
 def download_recording(item, output_dir, progress_bar=False):
-    download_link = select_download_link(item)
+    download_link = select_download_link(item, ['hd', 'hq'])
     filename = item.format_output_filename()
     output_file = filename
     if output_dir:

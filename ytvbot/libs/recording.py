@@ -34,30 +34,6 @@ class Recording:
         self.logger = logger
 
 
-    def get_start_time(self, sep=':'):
-        hour = self.start_date.strftime('%H')
-        minute = self.start_date.strftime('%M')
-        time = "%s%s%s" %(hour, sep, minute)
-
-        return time
-
-    def get_end_time(self, sep=':'):
-        hour = self.stop_date.strftime('%H')
-        minute = self.stop_date.strftime('%M')
-        time = "%s%s%s" %(hour, sep, minute)
-
-        return time
-
-    def get_date(self, sep='-'):
-        year = self.start_date.strftime('%Y')
-        month = self.start_date.strftime('%m')
-        day = self.start_date.strftime('%d')
-        time = "%s%s%s%s%s" % (year, sep, month, sep, day)
-
-        return time
-
-
-
     def dict(self):
 
         recording_list = {}
@@ -78,51 +54,70 @@ class Recording:
 
         return recording_list
 
+    def get_attribute(self, name, sep=None):
 
-    def list(self, fields=[ 'id', 'show_name', 'title',
-                            'start_time', 'end_time']):
+        if name == 'name':
+            return self.show_name
+        elif name == 'id':
+            return self.id
+        elif name == 'url':
+            return self.url
+        elif name == 'links':
+            return self.links
+        elif name == 'date':
+            if not sep:
+                sep = '-'
+            year = self.start_date.strftime('%Y')
+            month = self.start_date.strftime('%m')
+            day = self.start_date.strftime('%d')
+            return "%s%s%s%s%s" %(year, sep, month, sep, day)
+        elif name == 'start_time':
+            if not sep:
+                sep = ':'
+            hour = self.start_date.strftime('%H')
+            minute = self.start_date.strftime('%M')
+            return "%s%s%s" % (hour, sep, minute)
+        elif name == 'end_time':
+            if not sep:
+                sep = ':'
+            hour = self.start_date.strftime('%H')
+            minute = self.start_date.strftime('%M')
+            return "%s%s%s" % (hour, sep, minute)
+        elif name == 'genre':
+            return self.genre
+        elif name == 'network':
+            return self.network
+        elif name == 'information':
+            return self.information
+        elif name == 'title':
+            return self.title
+        elif name == 'episode':
+            return self.episode
+        elif name == 'season':
+            return self.season
+        else:
+            return None
+
+
+    def list(self, fields="name"):
 
         rec_list = []
-        start_date = self.start_date.strftime('%Y-%m-%d')
-        start_time = self.start_date.strftime('%H:%M')
-        end_time = self.start_date.strftime('%H:%M')
-
-        for i in fields:
-            if i == 'name':
-                rec_list.append(self.show_name)
-            elif i == 'id':
-                rec_list.append(self.id)
-            elif i == 'url':
-                rec_list.append(self.url)
-            elif i == 'links':
-                rec_list.append(self.links)
-            elif i == 'date':
-                rec_list.append(start_date)
-            elif i == 'start_time':
-                rec_list.append(start_time)
-            elif i == 'end_time':
-                rec_list.append(end_time)
-            elif i == 'genre':
-                rec_list.append(self.genre)
-            elif i == 'network':
-                rec_list.append(self.network)
-            elif i == 'information':
-                rec_list.append(self.information)
-            elif i == 'title':
-                rec_list.append(self.title)
-            elif i == 'episode':
-                rec_list.append(self.episode)
-            elif i == 'season':
-                rec_list.append(self.season)
+        if type(fields) == list:
+            for i in fields:
+                value = self.get_attribute(i)
+                rec_list.append(value)
+        else:
+            value = self.get_attribute(i)
+            rec_list.append(value)
 
         return rec_list
 
 
     def write_information_file(self, output_file):
 
-        date = self.get_date()
-        start_time = self.get_start_time()
-        end_time = self.get_end_time()
+        date = self.get_attribute('date')
+        start_time = self.get_attribute('start_time')
+        end_time = self.get_attribute('end_time')
 
         if not os.path.isfile(output_file):
             with codecs.open(output_file, "w", "utf-8") as f:
@@ -149,6 +144,8 @@ class Recording:
 
     def format_output_filename(self):
         fname = ("%s-%s-%s-%s-%s.mp4" % (self.show_name, self.title,
-            self.get_date(), self.get_start_time('_'), self.network))
+                self.get_attribute('date', '_'),
+                self.get_attribute('start_time','_'),
+                self.network))
 
         return fname
