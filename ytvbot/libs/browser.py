@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import logging
 import platform
 import psutil
 import pickle
@@ -17,24 +16,16 @@ from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 
 from selenium.common.exceptions import TimeoutException
 
+from log import add_logger
 
 class Browser:
 
-    def __init__(self, timeout=20, config_dir=None,
-                    loglevel=logging.DEBUG):
+    def __init__(self, timeout=20, config_dir=None):
 
         reload(sys)
         sys.setdefaultencoding('utf8')
 
-        logger = logging.getLogger('browser')
-        logger.setLevel(loglevel)
-        ch = logging.StreamHandler()
-        ch.setLevel(loglevel)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        ch.setFormatter(formatter)
-        logger.addHandler(ch)
-        self.logger = logger
+        self.logger = add_logger('browser')
 
         if 'Linux' in platform.uname():
             self.logger.info('starting headless mode')

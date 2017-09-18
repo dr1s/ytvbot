@@ -1,31 +1,18 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import logging
 import datetime
 
 from selenium.common.exceptions import NoSuchElementException
 
 from recording import Recording
-
+from log import add_logger
 
 class Scraper:
 
-    def __init__(self, browser, loglevel=logging.DEBUG):
+    def __init__(self, browser):
 
-        reload(sys)
-        sys.setdefaultencoding('utf8')
-
-        logger = logging.getLogger('scraper')
-        logger.setLevel(loglevel)
-        ch = logging.StreamHandler()
-        ch.setLevel(loglevel)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        ch.setFormatter(formatter)
-        logger.addHandler(ch)
-
-        self.logger = logger
+        self.logger = add_logger('scraper')
 
         self.browser = browser
         self.logged_in = False

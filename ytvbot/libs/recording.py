@@ -2,7 +2,7 @@ import datetime
 import codecs
 import os
 import textwrap
-import logging
+from log import add_logger
 
 class Recording:
 
@@ -23,15 +23,7 @@ class Recording:
         self.season = season
         self.episode = episode
 
-        logger = logging.getLogger('recording')
-        logger.setLevel(logging.INFO)
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.INFO)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        ch.setFormatter(formatter)
-        logger.addHandler(ch)
-        self.logger = logger
+        self.logger = add_logger('recording %s' % self.id)
 
 
     def dict(self):

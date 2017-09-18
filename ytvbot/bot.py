@@ -13,6 +13,7 @@ from prettytable import PrettyTable
 from libs.browser import Browser
 from libs.scraper import Scraper
 from libs.importer import import_json_file
+from libs.log import add_logger
 
 from selenium.common.exceptions import WebDriverException
 from urllib2 import HTTPError
@@ -23,8 +24,6 @@ password = None
 
 ytvbot_dir = None
 search = None
-
-loglevel = logging.DEBUG
 
 
 def usage():
@@ -83,10 +82,10 @@ def select_download_link(recording, quality_priority='hd'):
 
 def get_recordings(search=None):
     recordings = []
-    br = Browser(config_dir=ytvbot_dir, loglevel=loglevel)
+    br = Browser(config_dir=ytvbot_dir)
     try:
         br.login(email, password)
-        scraper = Scraper(br.browser, loglevel=loglevel)
+        scraper = Scraper(br.browser)
         recordings = scraper.get_recordings(search)
         br.destroy()
     except (KeyboardInterrupt, WebDriverException):
@@ -264,14 +263,7 @@ def main():
         logger.info("Start download recordings")
         download_recordings(recordings, output_dir, progress_bar=progress_bar)
 
-logger = logging.getLogger('ytvbot')
-logger.setLevel(loglevel)
-ch = logging.StreamHandler()
-ch.setLevel(loglevel)
-formatter = logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-ch.setFormatter(formatter)
-logger.addHandler(ch)
+logger = add_logger('ytvbot')
 
 if __name__ == "__main__":
     main()
