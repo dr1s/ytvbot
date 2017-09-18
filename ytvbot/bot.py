@@ -84,7 +84,7 @@ def get_recordings(search=None):
         scraper = Scraper(br.browser, loglevel=loglevel)
         recordings = scraper.get_recordings(search)
         br.destroy()
-    except KeyboardInterrupt or WebDriverException:
+    except (KeyboardInterrupt, WebDriverException) as e:
         if br:
             br.destroy()
     return recordings
@@ -183,11 +183,11 @@ def main():
     json_file = None
 
     try:
-        long = ["help", "output=", "links=", "user=", "password=",
+        long_args = ["help", "output=", "links=", "user=", "password=",
                 "config-dir=", "no-download", "progress", "search=",
                 "json="]
 
-        opts, args = getopt.getopt(sys.argv[1:], "hno:l:u:p:c:#s:j:", long )
+        opts, args = getopt.getopt(sys.argv[1:], "hno:l:u:p:c:#s:j:", long_args )
     except getopt.GetoptError as err:
         print str(err)
         usage()
@@ -222,9 +222,6 @@ def main():
             assert False, "unhandled option"
 
     setup_dir()
-    download_links = None
-    recording_links = []
-    browsers = None
 
     if not json_file or (json_file and not os.path.exists(json_file)):
         recordings = get_recordings(search)

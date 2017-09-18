@@ -147,8 +147,8 @@ class Recording:
             self.logger.debug("information file already exists: %s" % output_file)
 
 
-def format_output_filename(self):
-    fname = ("%s %s %s %s %s.mp4" % (self.show_name, self.title,
+    def format_output_filename(self):
+        fname = ("%s-%s-%s-%s-%s.mp4" % (self.show_name, self.title,
             self.get_date(), self.get_start_time('_'), self.network))
 
-    return fname
+        return fname
