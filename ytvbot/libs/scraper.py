@@ -176,37 +176,39 @@ class Scraper:
         return genre
 
 
+    def __get__next_item_from_desc_list(self, url, search):
+
+        item = None
+        search_list = []
+
+        if not isinstance(search, list):
+            search_list.append(search)
+        else:
+            search_list = search
+
+        desc_list = self.__get_desc_list__(url)
+        if desc_list:
+            for i in range(0, len(desc_list)):
+                if desc_list[i].strip(',') in search_list:
+                    item = desc_list[i+1]
+        else:
+            self.logger.debug("Can't find %s in desc list: %s" %
+                (str(search), url))
+
+        return item
+
+
     def get_recording_episode(self, url):
 
-        episode = None
-
-        try:
-            tmp = self.browser.find_element_by_class_name(
-                "broadcast-details-header--content-channel-description")
-            desc_list = tmp.text.split()
-            for i in range(0, len(desc_list)):
-                if desc_list[i].strip(',') in ['Episode', 'Folge']:
-                    episode = desc_list[i+1]
-        except NoSuchElementException:
-            self.logger.debug("Can't find episode number: %s" % url)
-
+        episode = self.__get__next_item_from_desc_list(url,
+            ['Episode', 'Folge'])
         return episode
 
 
     def get_recording_season(self, url):
 
-        season = None
-
-        try:
-            tmp = self.browser.find_element_by_class_name(
-                "broadcast-details-header--content-channel-description")
-            desc_list = tmp.text.split()
-            for i in range(0, len(desc_list)):
-                if desc_list[i].strip(',') in ['Staffel', 'Season']:
-                    season = desc_list[i+1]
-        except NoSuchElementException:
-            self.logger.debug("Can't find season number: %s" % url)
-
+        season = self.__get__next_item_from_desc_list(url,
+            ['Season', 'Staffel'])
         return season
 
 
