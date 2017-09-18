@@ -63,7 +63,7 @@ def select_download_link(recording, quality_priority='hd'):
     links = recording.links
     for link in links:
         link_found = False
-        if type(quality_priority) == list:
+        if isinstance(quality_priority, list):
             for quality in quality_priority:
                 if quality in link:
                     link_found = True
@@ -171,10 +171,12 @@ def write_links_to_file(recordings, output):
                 logger.debug('Link already found in file %s' % download_link)
 
 
-def print_recordings(recordings, fields=['id', 'name', 'title',
-        'date', 'start_time', 'end_time', 'network']):
+def print_recordings(recordings, fields='id'):
     pt = PrettyTable(fields)
-    for recording in recordings:
+    if isinstance(fields, list):
+        for recording in recordings:
+            pt.add_row(recording.list(fields))
+    else:
         pt.add_row(recording.list(fields))
     print(pt)
 
@@ -188,11 +190,11 @@ def main():
     json_file = None
 
     try:
-        long_args = ["help", "output=", "links=", "user=", "password=",
+        long_opts = ["help", "output=", "links=", "user=", "password=",
                 "config-dir=", "no-download", "progress", "search=",
                 "json="]
 
-        opts, args = getopt.getopt(sys.argv[1:], "hno:l:u:p:c:#s:j:", long_args )
+        opts, args = getopt.getopt(sys.argv[1:], "hno:l:u:p:c:#s:j:", long_opts )
     except getopt.GetoptError as err:
         print str(err)
         usage()
@@ -245,7 +247,8 @@ def main():
                     sort_keys=True, ensure_ascii=False))
 
     if recordings:
-        print_recordings(recordings)
+        print_recordings(recordings, ['id', 'name', 'title',
+                'date', 'start_time', 'end_time', 'network'])
     else:
         logger.debug('No recordings found to print')
 

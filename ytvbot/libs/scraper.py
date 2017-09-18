@@ -243,7 +243,6 @@ class Scraper:
                 "broadcast-details-header--content-channel-description")
             desc_list = tmp.text.split()
             for i in range(0, len(desc_list)):
-                desc_list[i]
                 if desc_list[i].strip(',') in ['Staffel', 'Season']:
                     season = desc_list[i+1]
         except NoSuchElementException:

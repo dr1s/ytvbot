@@ -102,7 +102,7 @@ class Recording:
     def list(self, fields="name"):
 
         rec_list = []
-        if type(fields) == list:
+        if isinstance(fields, list):
             for i in fields:
                 value = self.get_attribute(i)
                 rec_list.append(value)
