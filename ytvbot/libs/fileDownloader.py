@@ -163,7 +163,6 @@ class DownloadFile(object):
 
     def checkExists(self):
         """Checks to see if the file in the url in self.url exists"""
-        urllib2Obj = urllib2.urlopen(self.url, timeout=self.timeout)
         try:
             urllib2.urlopen(self.url, timeout=self.timeout)
         except urllib2.HTTPError:
