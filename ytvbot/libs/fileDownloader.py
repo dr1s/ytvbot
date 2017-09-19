@@ -140,7 +140,6 @@ class DownloadFile(object):
         urllib2Obj = urllib2.urlopen(req, timeout=self.timeout)
         self.__downloadFile__(urllib2Obj, f, callBack=callBack)
 
-    @staticmethod
     def getUrlFilename(self, url):
         """returns filename from url"""
         return urllib.unquote(os.path.basename(url))
