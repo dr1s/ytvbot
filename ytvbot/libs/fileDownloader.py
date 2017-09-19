@@ -17,7 +17,7 @@ version = "0.4.0"
 
 class DownloadFile(object):
     """This class is used for downloading files from the internet via http or ftp.
-    It supports basic http authentication and ftp accounts, and supports resuming downloads.
+    It supports resuming downloads.
     It does not support https or sftp at this time.
 
     The main advantage of this class is it's ease of use, and pure pythoness. It only uses the Python standard library,
@@ -37,24 +37,19 @@ class DownloadFile(object):
          Use full path to download
              downloader = fileDownloader.DownloadFile('http://example.com/file.zip', "C:/Users/username/Downloads/newfilename.zip")
              downloader.download()
-         Basic Authentication protected download
-             downloader = fileDownloader.DownloadFile('http://example.com/file.zip', "C:/Users/username/Downloads/newfilename.zip", ('username','password'))
-             downloader.download()
          Resume
              downloader = fileDownloader.DownloadFile('http://example.com/file.zip')
             downloader.resume()
     """
 
-    def __init__(self, url=None, localFileName=None, auth=None, timeout=120.0, autoretry=False, retries=5,
+    def __init__(self, url=None, localFileName=None, timeout=120.0, autoretry=False, retries=5,
                  fast_start=False, rate_limit_on=False, rate_limit=500, rate_burst=1000, progress_bar=None):
-        """Note that auth argument expects a tuple, ('username','password')."""
         self.url = url
         self.urlFileName = None
         self.progress = 0
         self.fileSize = None
         self.localFileName = localFileName
-        self.type = self.getType()
-        self.auth = auth
+        self.url_type = self.getType()
         self.timeout = timeout
         self.retries = retries
         self.fast_start = fast_start
@@ -130,27 +125,6 @@ class DownloadFile(object):
             print 'retries all used up'
             return False, "Retries Exhausted"
 
-    def __authHttp__(self):
-        """handles http basic authentication"""
-        passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        # this creates a password manager
-        passman.add_password(None, self.url, self.auth[0], self.auth[1])
-        # because we have put None at the start it will always
-        # use this username/password combination for  urls
-        authhandler = urllib2.HTTPBasicAuthHandler(passman)
-        # create the AuthHandler
-        opener = urllib2.build_opener(authhandler)
-        urllib2.install_opener(opener)
-
-    def __startHttpPartial__(self, startPos, endPos, callBack=None):
-        f = open(self.localFileName , "wb")
-        if self.auth:
-            self.__authHttp__()
-        req = urllib2.Request(self.url)
-        req.headers['Range'] = 'bytes=%s-%s' % (startPos, endPos)
-        urllib2Obj = urllib2.urlopen(req, timeout=self.timeout)
-        self.__downloadFile__(urllib2Obj, f, callBack=callBack)
-
     def __startHttpResume__(self, restart=None, callBack=None):
         """starts to resume HTTP"""
         curSize = self.getLocalFileSize()
@@ -161,22 +135,19 @@ class DownloadFile(object):
             f = open(self.localFileName , "wb")
         else:
             f = open(self.localFileName , "ab")
-        if self.auth:
-            self.__authHttp__()
         req = urllib2.Request(self.url)
         req.headers['Range'] = 'bytes=%s-%s' % (curSize, self.getUrlFileSize())
         urllib2Obj = urllib2.urlopen(req, timeout=self.timeout)
         self.__downloadFile__(urllib2Obj, f, callBack=callBack)
 
+    @staticmethod
     def getUrlFilename(self, url):
         """returns filename from url"""
         return urllib.unquote(os.path.basename(url))
 
     def getUrlFileSize(self):
         """gets filesize of remote file from ftp or http server"""
-        if self.type == 'http':
-            if self.auth:
-                authObj = self.__authHttp__()
+        if self.url_type == 'http':
             urllib2Obj = urllib2.urlopen(self.url, timeout=self.timeout)
             size = urllib2Obj.headers.get('content-length')
             return size
@@ -188,52 +159,33 @@ class DownloadFile(object):
 
     def getType(self):
         """returns protocol of url (ftp or http)"""
-        type = urlparse.urlparse(self.url).scheme
-        return type
+        url_type = urlparse.urlparse(self.url).scheme
+        return url_type
 
     def checkExists(self):
         """Checks to see if the file in the url in self.url exists"""
-        if self.auth:
-            if self.type == 'http':
-                authObj = self.__authHttp__()
-                try:
-                    urllib2.urlopen(self.url, timeout=self.timeout)
-                except urllib2.HTTPError:
-                    return False
-                return True
-        else:
-            urllib2Obj = urllib2.urlopen(self.url, timeout=self.timeout)
-            try:
-                urllib2.urlopen(self.url, timeout=self.timeout)
-            except urllib2.HTTPError:
-                return False
-            return True
+        urllib2Obj = urllib2.urlopen(self.url, timeout=self.timeout)
+        try:
+            urllib2.urlopen(self.url, timeout=self.timeout)
+        except urllib2.HTTPError:
+            return False
+        return True
 
     def download(self, callBack=None):
         """starts the file download"""
         self.curretry = 0
         self.cur = 0
         f = open(self.localFileName , "wb")
-        if self.auth:
-            if self.type == 'http':
-                self.__authHttp__()
-                urllib2Obj = urllib2.urlopen(self.url, timeout=self.timeout)
-                self.__downloadFile__(urllib2Obj, f, callBack=callBack)
-        else:
-            urllib2Obj = urllib2.urlopen(self.url, timeout=self.timeout)
-            self.__downloadFile__(urllib2Obj, f, callBack=callBack)
+        urllib2Obj = urllib2.urlopen(self.url, timeout=self.timeout)
+        self.__downloadFile__(urllib2Obj, f, callBack=callBack)
         return True
 
     def resume(self, callBack=None):
         """attempts to resume file download"""
-        type = self.getType()
-        if type == 'http':
+        url_type = self.getType()
+        if url_type == 'http':
             self.__startHttpResume__(callBack=callBack)
 
-    def partialDownload(self, startPos, endPos, callBack=None):
-        """downloads a piece of a file, only supports HTTP"""
-        if self.type == 'http':
-            self.__startHttpPartial__(startPos, endPos, callBack=callBack)
 
 class FileDownloaderError(Exception):
     def __init(self, message=''):

@@ -5,9 +5,9 @@ from recording import Recording
 
 def import_dict_recording(rec):
     start_date = datetime.datetime.strptime(
-        rec['start_date'], "%Y-%m-%d:%H:%M")
+        rec['date']+":"+rec['start_time'], "%Y-%m-%d:%H:%M")
     stop_date = datetime.datetime.strptime(
-        rec['stop_date'], "%Y-%m-%d:%H:%M")
+        rec['date']+":"+rec['end_time'], "%Y-%m-%d:%H:%M")
     recording = Recording(rec['url'], rec['show_name'], rec['links'],
         rec['title'], rec['information'], start_date, stop_date,
         rec['genre'], rec['network'],

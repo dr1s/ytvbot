@@ -216,7 +216,8 @@ def main():
             logger.debug("Writing json file to: %s" % link_output)
             recordings_list = []
             for recording in recordings:
-                recordings_list.append(recording.dict())
+                rec_dict = recording.dict()
+                recordings_list.append(rec_dict)
             with codecs.open(json_file, 'w', 'utf-8') as f:
                 f.write(json.dumps(recordings_list, f, indent=2,
                     sort_keys=True, ensure_ascii=False))

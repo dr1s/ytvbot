@@ -23,70 +23,55 @@ class Recording:
         self.logger = add_logger('recording %s' % self.id)
 
 
-    def dict(self):
+    def get_start_time(self, sep=':'):
+        hour = self.start_date.strftime('%H')
+        minute = self.start_date.strftime('%M')
+        time = "%s%s%s" %(hour, sep, minute)
 
-        recording_list = {}
+        return time
 
-        recording_list[u'show_name'] = self.show_name
-        recording_list[u'url'] = self.url
-        recording_list[u'links'] = self.links
-        recording_list[u'start_date'] = unicode(
-            self.start_date.strftime('%Y-%m-%d:%H:%M'))
-        recording_list[u'stop_date'] = unicode(
-            self.stop_date.strftime('%Y-%m-%d:%H:%M'))
-        recording_list[u'genre'] = self.genre
-        recording_list[u'network'] = self.network
-        recording_list[u'information'] = self.information
-        recording_list[u'season'] = self.season
-        recording_list[u'episode'] = self.episode
-        recording_list[u'title'] = self.title
 
-        return recording_list
+    def get_end_time(self, sep=':'):
+        hour = self.stop_date.strftime('%H')
+        minute = self.stop_date.strftime('%M')
+        time = "%s%s%s" %(hour, sep, minute)
+
+        return time
+
+
+    def get_date(self, sep='-'):
+        year = self.start_date.strftime('%Y')
+        month = self.start_date.strftime('%m')
+        day = self.start_date.strftime('%d')
+        time = "%s%s%s%s%s" % (year, sep, month, sep, day)
+
+        return time
+
 
     def get_attribute(self, name, sep=None):
 
-        if name == 'name':
-            return self.show_name
-        elif name == 'id':
-            return self.id
-        elif name == 'url':
-            return self.url
-        elif name == 'links':
-            return self.links
-        elif name == 'date':
-            if not sep:
-                sep = '-'
-            year = self.start_date.strftime('%Y')
-            month = self.start_date.strftime('%m')
-            day = self.start_date.strftime('%d')
-            return "%s%s%s%s%s" %(year, sep, month, sep, day)
-        elif name == 'start_time':
-            if not sep:
-                sep = ':'
-            hour = self.start_date.strftime('%H')
-            minute = self.start_date.strftime('%M')
-            return "%s%s%s" % (hour, sep, minute)
-        elif name == 'end_time':
-            if not sep:
-                sep = ':'
-            hour = self.stop_date.strftime('%H')
-            minute = self.stop_date.strftime('%M')
-            return "%s%s%s" % (hour, sep, minute)
-        elif name == 'genre':
-            return self.genre
-        elif name == 'network':
-            return self.network
-        elif name == 'information':
-            return self.information
-        elif name == 'title':
-            return self.title
-        elif name == 'episode':
-            return self.episode
-        elif name == 'season':
-            return self.season
-        else:
-            return None
+        rec_dict =  self.__dict__
 
+        for item in rec_dict:
+            if name == 'date':
+                return self.get_date()
+            elif name == 'start_time':
+                return self.get_start_time()
+            elif name == 'end_time':
+                return self.get_end_time()
+            else:
+                attr = getattr(self, name, None)
+                return attr
+
+    def dict(self):
+        rec_dict = self.__dict__.copy()
+        rec_dict['start_time'] = self.get_start_time()
+        rec_dict['end_time'] = self.get_end_time()
+        rec_dict['date'] = self.get_date()
+        del rec_dict['stop_date']
+        del rec_dict['start_date']
+        del rec_dict['logger']
+        return rec_dict
 
     def list(self, fields="name"):
 
