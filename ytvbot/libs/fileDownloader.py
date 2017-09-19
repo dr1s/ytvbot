@@ -8,6 +8,7 @@ import urlparse
 import urllib
 import sys
 import socket
+from log import add_logger
 
 from tqdm import tqdm
 
@@ -174,9 +175,14 @@ class DownloadFile(object):
         self.curretry = 0
         self.cur = 0
         f = open(self.localFileName , "wb")
-        urllib2Obj = urllib2.urlopen(self.url, timeout=self.timeout)
-        self.__downloadFile__(urllib2Obj, f, callBack=callBack)
+        try:
+            urllib2Obj = urllib2.urlopen(self.url, timeout=self.timeout)
+            self.__downloadFile__(urllib2Obj, f, callBack=callBack)
+        except urllib2.HTTPError:
+            self.logger.debug("Can't download file: %s" % self.url)
+
         return True
+
 
     def resume(self, callBack=None):
         """attempts to resume file download"""
