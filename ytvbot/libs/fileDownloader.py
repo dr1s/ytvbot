@@ -71,6 +71,7 @@ class DownloadFile(object):
         if self.rate_limit_on:
             self.bucket = TokenBucket(self.rate_burst, self.rate_limit)
         self.progress_bar = progress_bar
+        self.logger = add_logger("filedownloader")
 
     def __downloadFile__(self, urlObj, fileObj, callBack=None):
         """starts the download loop"""
