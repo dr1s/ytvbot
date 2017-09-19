@@ -7,13 +7,13 @@ import getopt
 import fileDownloader
 import json
 import codecs
-from prettytable import PrettyTable
 
 from libs.browser import Browser
 from libs.scraper import Scraper
 from libs.importer import import_json_file
 from libs.log import add_logger
 from libs import fileDownloader
+from libs.exporter import write_links_to_file, print_recordings
 
 from selenium.common.exceptions import WebDriverException
 from urllib2 import HTTPError
@@ -156,30 +156,6 @@ def download_recordings(links, output_dir=None, progress_bar=False):
         download_recording(item, output_dir, progress_bar)
 
 
-def write_links_to_file(recordings, output):
-
-    logger.info("Wrtiting links to file: %s" % output)
-    for recording in recordings:
-        download_link = select_download_link(recording)
-        if download_link:
-            if download_link not in open(output).read():
-                logger.debug('Link not found in file adding: %s' % download_link)
-                with open(output, "a") as f:
-                    f.write("%s\n" % download_link)
-            else:
-                logger.debug('Link already found in file %s' % download_link)
-
-
-def print_recordings(recordings, fields='id'):
-    pt = PrettyTable(fields)
-    if isinstance(fields, list):
-        for recording in recordings:
-            pt.add_row(recording.list(fields))
-    else:
-        pt.add_row(recording.list(fields))
-    print(pt)
-
-
 def main():
 
     output_dir = None
@@ -250,9 +226,6 @@ def main():
                 'date', 'start_time', 'end_time', 'network'])
     else:
         logger.debug('No recordings found to print')
-
-    #cache_file = os.path.join(ytvbot_dir, 'cache')
-    #write_links_to_file(recordings, cache_file)
 
     if link_output:
         with open(link_output, 'w'):
