@@ -1,7 +1,7 @@
 from log import add_logger
 import exporter
 
-class Recording:
+class Recording(object):
 
     def __init__(   self, url, show_name, links, title=None,
                     information=None, start_date=None,
@@ -50,8 +50,6 @@ class Recording:
 
     def get_attribute(self, name, sep=None):
 
-        rec_dict =  self.__dict__
-
         if name == 'date':
             return self.get_date()
         elif name == 'start_time':
@@ -60,7 +58,6 @@ class Recording:
             return self.get_end_time()
         else:
             attr = getattr(self, name, None)
-            print attr
             return attr
 
     def dict(self):
