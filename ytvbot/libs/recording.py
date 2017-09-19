@@ -52,16 +52,16 @@ class Recording:
 
         rec_dict =  self.__dict__
 
-        for item in rec_dict:
-            if item == 'date':
-                return self.get_date()
-        elif item == 'start_time':
-                return self.get_start_time()
-        elif item == 'end_time':
-                return self.get_end_time()
-            else:
-                attr = getattr(self, name, None)
-                return attr
+        if name == 'date':
+            return self.get_date()
+        elif name == 'start_time':
+            return self.get_start_time()
+        elif name == 'end_time':
+            return self.get_end_time()
+        else:
+            attr = getattr(self, name, None)
+            print attr
+            return attr
 
     def dict(self):
         rec_dict = self.__dict__.copy()

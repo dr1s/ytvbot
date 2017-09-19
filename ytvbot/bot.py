@@ -223,7 +223,7 @@ def main():
                     sort_keys=True, ensure_ascii=False))
 
     if recordings:
-        print_recordings(recordings, ['id', 'name', 'title',
+        print_recordings(recordings, ['id', 'show_name', 'title',
                 'date', 'start_time', 'end_time', 'network'])
     else:
         logger.debug('No recordings found to print')
