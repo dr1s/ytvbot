@@ -24,6 +24,9 @@ class Recording(object):
 
 
     def get_start_time(self, sep=':'):
+
+        if not sep:
+            sep = ":"
         hour = self.start_date.strftime('%H')
         minute = self.start_date.strftime('%M')
         time = "%s%s%s" %(hour, sep, minute)
@@ -32,6 +35,9 @@ class Recording(object):
 
 
     def get_end_time(self, sep=':'):
+
+        if not sep:
+            sep = ":"
         hour = self.stop_date.strftime('%H')
         minute = self.stop_date.strftime('%M')
         time = "%s%s%s" %(hour, sep, minute)
@@ -40,6 +46,9 @@ class Recording(object):
 
 
     def get_date(self, sep='-'):
+        
+        if not sep:
+            sep = "-"
         year = self.start_date.strftime('%Y')
         month = self.start_date.strftime('%m')
         day = self.start_date.strftime('%d')
@@ -51,11 +60,11 @@ class Recording(object):
     def get_attribute(self, name, sep=None):
 
         if name == 'date':
-            return self.get_date()
+            return self.get_date(sep)
         elif name == 'start_time':
-            return self.get_start_time()
+            return self.get_start_time(sep)
         elif name == 'end_time':
-            return self.get_end_time()
+            return self.get_end_time(sep)
         else:
             attr = getattr(self, name, None)
             return attr
