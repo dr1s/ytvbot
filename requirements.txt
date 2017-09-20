@@ -1,0 +1,4 @@
+selenium
+pyvirtualdisplay
+psutil
+prettytable
