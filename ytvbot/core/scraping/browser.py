@@ -16,7 +16,7 @@ from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 
 from selenium.common.exceptions import TimeoutException
 
-from log import add_logger
+from ..log import add_logger
 
 class Browser:
 

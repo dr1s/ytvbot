@@ -1,7 +1,9 @@
 import textwrap
 import codecs
 import os
+
 from prettytable import PrettyTable
+
 
 def __write_data_to_file__(item, f):
 

@@ -1,7 +1,10 @@
+import codecs
 import json
 import datetime
-import codecs
-from recording import Recording
+
+from scraping.recording import Recording
+from prettytable import PrettyTable
+
 
 def import_dict_recording(rec):
     start_date = datetime.datetime.strptime(

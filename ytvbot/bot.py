@@ -7,12 +7,12 @@ import getopt
 import json
 import codecs
 
-from libs.browser import Browser
-from libs.scraper import Scraper
-from libs.importer import import_json_file
-from libs.log import add_logger
-from libs import fileDownloader
-from libs.exporter import write_links_to_file, print_recordings
+from core.scraping.browser import Browser
+from core.scraping.scraper import Scraper
+from core.importer import import_json_file
+from core.scraping.exporter import write_links_to_file, print_recordings
+from core.log import add_logger
+from core import fileDownloader
 
 from selenium.common.exceptions import WebDriverException
 from urllib2 import HTTPError

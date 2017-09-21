@@ -1,4 +1,4 @@
-from log import add_logger
+from ..log import add_logger
 import exporter
 
 class Recording(object):

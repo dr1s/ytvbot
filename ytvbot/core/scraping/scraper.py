@@ -5,7 +5,7 @@ import datetime
 from selenium.common.exceptions import NoSuchElementException
 
 from recording import Recording
-from log import add_logger
+from ..log import add_logger
 
 class Scraper:
 
