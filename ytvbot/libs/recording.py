@@ -46,7 +46,7 @@ class Recording(object):
 
 
     def get_date(self, sep='-'):
-        
+
         if not sep:
             sep = "-"
         year = self.start_date.strftime('%Y')
@@ -97,10 +97,11 @@ class Recording(object):
         exporter.write_information_file(self, output_file)
 
 
-    def format_output_filename(self):
-        fname = ("%s-%s-%s-%s-%s.mp4" % (self.show_name, self.title,
-                self.get_attribute('date', '_'),
-                self.get_attribute('start_time','_'),
-                self.network))
+    def format_output_filename(self, fname=None):
+        if not fname:
+            fname = "{show_name}-{title}-{date}-{start_time}-{network}"
+        extension = "mp4"
+        fname_tmp = "{0}.{1}".format(fname, extension)
+        filename = fname_tmp.format(**self.dict())
 
-        return fname
+        return filename
