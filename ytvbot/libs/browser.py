@@ -85,11 +85,18 @@ class Browser:
                 'session_password')
             login_password.send_keys(password)
 
-            self.browser.find_element_by_xpath(
-                "//input[@value='Anmelden']").click()
+            login_button = self.browser.find_element_by_xpath(
+                "//input[@value='Anmelden']")
+            login_button.click()
 
         self.__check_logged_in__()
-        pickle.dump( self.browser.get_cookies() , open(cookies_file,"wb"))
+
+        if self.logged_in:
+            pickle.dump( self.browser.get_cookies() , open(cookies_file,"wb"))
+        else:
+            self.logger.debug("Login failed")
+            self.destroy()
+            sys.exit()
 
 
 
