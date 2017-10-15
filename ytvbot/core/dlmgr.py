@@ -6,10 +6,11 @@ from urllib2 import HTTPError
 
 class Manager(object):
 
-    def __init__(self, output_dir, recordings):
+    def __init__(self, output_dir, recordings, progress_bar = None):
         self.output_dir = output_dir
         self.downloads = []
         self.logger = add_logger('dlmanager')
+        self.pbar = progress_bar
 
         for recording in recordings:
             download_link = recording.select_download_link(
@@ -37,7 +38,7 @@ class Manager(object):
 
 
             downloader = fileDownloader.DownloadFile(download_link,
-                output_file, progress_bar=True)
+                output_file, progress_bar=pbar)
             self.downloads.append(downloader)
 
 

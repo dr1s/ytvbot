@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 import json
 import codecs
 import argparse
@@ -108,9 +107,10 @@ def main():
             for recording in recordings:
                 rec_dict = recording.dict()
                 recordings_list.append(rec_dict)
+            json = json.dumps(recordings_list, f, indent=2,
+                sort_keys=True, ensure_ascii=False)
             with codecs.open(json_file, 'w', 'utf-8') as f:
-                f.write(json.dumps(recordings_list, f, indent=2,
-                    sort_keys=True, ensure_ascii=False))
+                f.write(json)
 
     if recordings:
         print_recordings(recordings, ['id', 'show_name', 'title',
@@ -125,7 +125,7 @@ def main():
 
     if download_files and recordings:
         logger.info("Start download recordings")
-        mgr = Manager(output_dir, recordings)
+        mgr = Manager(output_dir, recordings, progress_bar=progress_bar)
         mgr.start()
 
 logger = add_logger('ytvbot')
