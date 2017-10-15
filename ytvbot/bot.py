@@ -13,7 +13,8 @@ from core.importer import import_json_file
 from core.scraping.exporter import write_links_to_file, print_recordings
 from core.log import add_logger
 from core import fileDownloader
-
+from core.dlmgr import Manager
+from core.utils import check_dir, setup_config_dir
 from selenium.common.exceptions import WebDriverException
 from urllib2 import HTTPError
 
@@ -21,7 +22,6 @@ from urllib2 import HTTPError
 email = None
 password = None
 
-ytvbot_dir = None
 search = None
 
 
@@ -39,31 +39,11 @@ def usage():
     print(" -j | --json [output_file]: save results as json file")
     print(" -z | --network [network_name]: show results for network")
 
-def check_dir(directory):
-    if not os.path.isdir(directory):
-        os.mkdir(directory)
 
 
-def setup_dir():
-
-    global ytvbot_dir
-
-    if not ytvbot_dir:
-        home = os.path.expanduser("~")
-        ytvbot_dir = os.path.join(home, '.ytvbot')
-
-    check_dir(ytvbot_dir)
-
-    cache_file = os.path.join(ytvbot_dir, 'cache')
-    if not os.path.exists(cache_file):
-        with open(cache_file, 'a'):
-            os.utime(cache_file, None)
-
-
-
-def get_recordings(search=None, network=None):
+def get_recordings(conf_dir, search=None, network=None):
     recordings = []
-    br = Browser(config_dir=ytvbot_dir)
+    br = Browser(config_dir=conf_dir)
     try:
         br.login(email, password)
         scraper = Scraper(br.browser)
@@ -75,67 +55,6 @@ def get_recordings(search=None, network=None):
     return recordings
 
 
-def resume(downloader, download_link, output_file):
-
-    tmp_file = output_file + ".download"
-
-    if (os.path.isfile(tmp_file)):
-        logger.debug('Resuming download: %s' % download_link)
-        try:
-            downloader.resume()
-            os.remove(tmp_file)
-        except HTTPError:
-            logger.debug(
-                "Can't resume. File already finished downloading")
-    else:
-        logger.debug("File already finished downloading: %s" %
-            output_file)
-
-
-
-def download_recording(item, output_dir, progress_bar=False):
-    download_link = item.select_download_link(['hd', 'hq'])
-    filename = item.format_output_filename()
-    output_file = filename
-    if output_dir:
-        if item.show_name:
-            output_tmp = os.path.join(output_dir, item.show_name)
-            output_file = os.path.join(output_tmp, filename)
-        else:
-            output_file = os.path.join(output_dir, filename)
-    else:
-        if item.show_name:
-            output_file = os.path.join(item.show_name, filename)
-
-    out_dir = os.path.dirname(output_file)
-    check_dir(out_dir)
-
-    if item.information:
-        info_file = output_file.split('.')[0] + ".txt"
-        item.write_information_file(info_file)
-
-
-    downloader = fileDownloader.DownloadFile(download_link, output_file,
-                progress_bar=progress_bar)
-
-    if os.path.isfile(output_file):
-        resume(downloader, download_link, output_file)
-    else:
-        logger.info('Downloading: %s' % download_link)
-        tmp_file = output_file + ".download"
-        with open(tmp_file, 'w'):
-            os.utime(tmp_file, None)
-        downloader.download()
-        os.remove(tmp_file)
-
-
-
-def download_recordings(links, output_dir=None, progress_bar=False):
-
-    for item in links:
-        download_recording(item, output_dir, progress_bar)
-
-
 def main():
 
     output_dir = None
@@ -144,6 +63,7 @@ def main():
     progress_bar = False
     json_file = None
     network = None
+    ytvbot_dir = None
 
     try:
         long_opts = ["help", "output=", "links=", "user=", "password=",
@@ -173,7 +93,6 @@ def main():
             global password
             password = a
         elif o in ("-c", "--config-dir"):
-            global ytvbot_dir
             ytvbot_dir = a
         elif o in ("-#", "--progress"):
             progress_bar = True
@@ -187,10 +106,10 @@ def main():
         else:
             assert False, "unhandled option"
 
-    setup_dir()
+    ytvbot_dir = setup_config_dir(ytvbot_dir)
 
     if not json_file or (json_file and not os.path.exists(json_file)):
-        recordings = get_recordings(search, network)
+        recordings = get_recordings(ytvbot_dir, search, network)
 
     if json_file:
         if os.path.isfile(json_file):
@@ -213,13 +132,14 @@ def main():
         logger.debug('No recordings found to print')
 
     if link_output:
-        with open(link_output, 'w'):
+        with codecs.open(link_output, 'w', 'utf-8'):
             os.utime(link_output, None)
         write_links_to_file(recordings, link_output)
 
-    if download_files:
+    if download_files and recordings:
         logger.info("Start download recordings")
-        download_recordings(recordings, output_dir, progress_bar=progress_bar)
+        mgr = Manager(output_dir, recordings)
+        mgr.start()
 
 logger = add_logger('ytvbot')
 
