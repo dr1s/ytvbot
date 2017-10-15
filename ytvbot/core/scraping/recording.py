@@ -105,3 +105,23 @@ class Recording(object):
         filename = fname_tmp.format(**self.dict())
 
         return filename
+
+
+    def select_download_link(self, quality_priority='hd'):
+
+        selected = None
+        for link in self.links:
+            if isinstance(quality_priority, list):
+                for quality in quality_priority:
+                    if quality in link:
+                        selected = link
+                        break
+            else:
+                if quality in link:
+                    selected = link
+
+            if selected:
+                self.logger.debug('Selecting link: %s' % selected)
+                break
+
+        return selected

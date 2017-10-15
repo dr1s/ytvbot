@@ -57,27 +57,8 @@ def setup_dir():
     cache_file = os.path.join(ytvbot_dir, 'cache')
     if not os.path.exists(cache_file):
         with open(cache_file, 'a'):
-            os.utime(cache_filen, None)
+            os.utime(cache_file, None)
 
-
-def select_download_link(recording, quality_priority='hd'):
-
-    selected = None
-    for link in recording.links:
-        if isinstance(quality_priority, list):
-            for quality in quality_priority:
-                if quality in link:
-                    selected = link
-                    break
-        else:
-            if quality in link:
-                selected = link
-
-        if selected:
-            logger.debug('Selecting link: %s' % selected)
-            break
-
-    return selected
 
 
 def get_recordings(search=None, network=None):
@@ -112,9 +93,8 @@ def resume(downloader, download_link, output_file):
 
 
 
-
 def download_recording(item, output_dir, progress_bar=False):
-    download_link = select_download_link(item, ['hd', 'hq'])
+    download_link = item.select_download_link(['hd', 'hq'])
     filename = item.format_output_filename()
     output_file = filename
     if output_dir:
