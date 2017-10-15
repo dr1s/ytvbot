@@ -12,18 +12,13 @@ from core.scraping.scraper import Scraper
 from core.importer import import_json_file
 from core.scraping.exporter import write_links_to_file, print_recordings
 from core.log import add_logger
-from core import fileDownloader
 from core.dlmgr import Manager
-from core.utils import check_dir, setup_config_dir
+from core.utils import setup_config_dir
 from selenium.common.exceptions import WebDriverException
-from urllib2 import HTTPError
 
 
 email = None
 password = None
-
-search = None
-
 
 def usage():
     print("usage: ytvbot [arguments]")
@@ -64,6 +59,7 @@ def main():
     json_file = None
     network = None
     ytvbot_dir = None
+    search = None
 
     try:
         long_opts = ["help", "output=", "links=", "user=", "password=",
@@ -97,7 +93,6 @@ def main():
         elif o in ("-#", "--progress"):
             progress_bar = True
         elif o in ("-s", "--search"):
-            global search
             search = a
         elif o in ("-j", "--json"):
             json_file = os.path.abspath(a)
