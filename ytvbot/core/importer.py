@@ -3,7 +3,6 @@ import json
 import datetime
 
 from scraping.recording import Recording
-from prettytable import PrettyTable
 
 
 def import_dict_recording(rec):
