@@ -37,7 +37,7 @@ Download recordings form youtv.de
     -# | --progress: show progress bar when downloading files
     -s | --search [show_name]: only look for show_name
     -j | --json [output_file]: save results as json file
-
+    -z | --network [network_name]: show results for network
 
 ## Thanks
 

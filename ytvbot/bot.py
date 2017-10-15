@@ -37,6 +37,7 @@ def usage():
     print(" -# | --progress: show progress bar when downloading files")
     print(" -s | --search [show_name]: only look for show_name")
     print(" -j | --json [output_file]: save results as json file")
+    print(" -z | --network [network_name]: show results for network")
 
 def setup_dir():
 
@@ -79,13 +80,13 @@ def select_download_link(recording, quality_priority='hd'):
     return selected
 
 
-def get_recordings(search=None):
+def get_recordings(search=None, network=None):
     recordings = []
     br = Browser(config_dir=ytvbot_dir)
     try:
         br.login(email, password)
         scraper = Scraper(br.browser)
-        recordings = scraper.get_recordings(search)
+        recordings = scraper.get_recordings(search, network)
         br.destroy()
     except (KeyboardInterrupt, WebDriverException):
         if br:
@@ -162,13 +163,15 @@ def main():
     download_files = True
     progress_bar = False
     json_file = None
+    network = None
 
     try:
         long_opts = ["help", "output=", "links=", "user=", "password=",
                 "config-dir=", "no-download", "progress", "search=",
-                "json="]
+                "json=", "network="]
 
-        opts, args = getopt.getopt(sys.argv[1:], "hno:l:u:p:c:#s:j:", long_opts )
+        opts, args = getopt.getopt(sys.argv[1:], "hno:l:u:p:c:#s:j:z:",
+            long_opts )
     except getopt.GetoptError as err:
         print str(err)
         usage()
@@ -199,13 +202,15 @@ def main():
             search = a
         elif o in ("-j", "--json"):
             json_file = os.path.abspath(a)
+        elif o in ("-z","--network"):
+            network = a
         else:
             assert False, "unhandled option"
 
     setup_dir()
 
     if not json_file or (json_file and not os.path.exists(json_file)):
-        recordings = get_recordings(search)
+        recordings = get_recordings(search, network)
 
     if json_file:
         if os.path.isfile(json_file):

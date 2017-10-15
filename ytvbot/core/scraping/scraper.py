@@ -264,7 +264,7 @@ class Scraper:
         return recording
 
 
-    def get_recordings(self, search=None):
+    def get_recordings(self, search=None, network=None):
         recordings = []
         recordings_urls= []
 
@@ -279,4 +279,11 @@ class Scraper:
 
         #reverse recordings list as the last one is the oldest one
         recordings.reverse()
-        return recordings
+        if network:
+            rec_nw = []
+            for rec in recordings:
+                if network == rec.network:
+                    rec_nw.append(rec)
+            return rec_nw
+        else:
+            return recordings
