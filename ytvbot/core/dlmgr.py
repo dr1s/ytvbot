@@ -38,7 +38,7 @@ class Manager(object):
 
 
             downloader = fileDownloader.DownloadFile(download_link,
-                output_file, progress_bar=pbar)
+                output_file, progress_bar=self.pbar)
             self.downloads.append(downloader)
 
 
