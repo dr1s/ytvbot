@@ -3,9 +3,9 @@
 
 import os
 import sys
-import getopt
 import json
 import codecs
+import argparse
 
 from core.scraping.browser import Browser
 from core.scraping.scraper import Scraper
@@ -52,54 +52,46 @@ def get_recordings(conf_dir, search=None, network=None):
 
 def main():
 
-    output_dir = None
-    link_output = None
-    download_files = True
-    progress_bar = False
-    json_file = None
-    network = None
-    ytvbot_dir = None
-    search = None
+    parser = argparse.ArgumentParser(
+        description='Download recordings from ytv')
 
-    try:
-        long_opts = ["help", "output=", "links=", "user=", "password=",
-                "config-dir=", "no-download", "progress", "search=",
-                "json=", "network="]
+    parser.add_argument('-u', '--user',
+        help='email address', default=None)
+    parser.add_argument('-p', '--password',
+        help='passord', default=None)
+    parser.add_argument('-c', '--configdir',
+        help='path to configuration directory', default=None)
+    parser.add_argument('-o', '--output',
+        help='path to output directory', default=None)
+    parser.add_argument('-n', '--nodownload',
+        help='Don\'t download anything', action='store_false',
+        default=True)
+    parser.add_argument('-l', '--links',
+        help='save links in this file', default=None)
+    parser.add_argument('-#', '--progress',
+        help='show progress bar when downloading files',
+        action='store_true', default=False)
+    parser.add_argument('-s', '--search',
+        help='search for show name', default=None)
+    parser.add_argument('-j', '--json',
+        help='save or load results to/from json file', default=None)
+    parser.add_argument('-z', '--network',
+        help='show results for network', default=None)
+    args = parser.parse_args()
 
-        opts, args = getopt.getopt(sys.argv[1:], "hno:l:u:p:c:#s:j:z:",
-            long_opts )
-    except getopt.GetoptError as err:
-        print str(err)
-        usage()
-        sys.exit(2)
-    for o, a in opts:
-        if o in ("-h", "--help"):
-            usage()
-            sys.exit()
-        elif o in ("-o", "--output"):
-            output_dir = os.path.abspath(a)
-        elif o in ("-l", "--links"):
-            link_output = os.path.abspath(a)
-        elif o in ("-n", "--no-download"):
-            download_files = False
-        elif o in ("-u", "--user"):
-            global email
-            email = a
-        elif o in ("-p", "--password"):
-            global password
-            password = a
-        elif o in ("-c", "--config-dir"):
-            ytvbot_dir = a
-        elif o in ("-#", "--progress"):
-            progress_bar = True
-        elif o in ("-s", "--search"):
-            search = a
-        elif o in ("-j", "--json"):
-            json_file = os.path.abspath(a)
-        elif o in ("-z","--network"):
-            network = a
-        else:
-            assert False, "unhandled option"
+    global email
+    email = args.user
+    global password
+    password = args.password
+    ytvbot_dir = args.configdir
+    output_dir = args.output
+    download_files = args.nodownload
+    link_output = args.links
+    progress_bar = args.progress
+    search = args.search
+    json_file = args.json
+    network = args.network
+
 
     ytvbot_dir = setup_config_dir(ytvbot_dir)
 
