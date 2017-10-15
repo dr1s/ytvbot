@@ -39,6 +39,11 @@ def usage():
     print(" -j | --json [output_file]: save results as json file")
     print(" -z | --network [network_name]: show results for network")
 
+def check_dir(dir):
+    if not os.path.isdir(dir):
+        os.mkdir(dir)
+
+
 def setup_dir():
 
     global ytvbot_dir
@@ -47,8 +52,7 @@ def setup_dir():
         home = os.path.expanduser("~")
         ytvbot_dir = os.path.join(home, '.ytvbot')
 
-    if not os.path.isdir(ytvbot_dir):
-        os.mkdir(ytvbot_dir)
+    check_dir(ytvbot_dir)
 
     cache_file = os.path.join(ytvbot_dir, 'cache')
     if not os.path.exists(cache_file):
@@ -59,21 +63,17 @@ def setup_dir():
 def select_download_link(recording, quality_priority='hd'):
 
     selected = None
-    links = recording.links
-    for link in links:
-        link_found = False
+    for link in recording.links:
         if isinstance(quality_priority, list):
             for quality in quality_priority:
                 if quality in link:
-                    link_found = True
                     selected = link
                     break
         else:
             if quality in link:
-                link_found = True
                 selected = link
 
-        if link_found:
+        if selected:
             logger.debug('Selecting link: %s' % selected)
             break
 
@@ -111,6 +111,8 @@ def resume(downloader, download_link, output_file):
             output_file)
 
 
+
+
 def download_recording(item, output_dir, progress_bar=False):
     download_link = select_download_link(item, ['hd', 'hq'])
     filename = item.format_output_filename()
@@ -118,17 +120,15 @@ def download_recording(item, output_dir, progress_bar=False):
     if output_dir:
         if item.show_name:
             output_tmp = os.path.join(output_dir, item.show_name)
-            if not os.path.exists(output_tmp):
-                os.mkdir(output_tmp)
             output_file = os.path.join(output_tmp, filename)
         else:
             output_file = os.path.join(output_dir, filename)
     else:
         if item.show_name:
             output_file = os.path.join(item.show_name, filename)
-            if not os.path.exists(item.show_name):
-                os.mkdir(str(item.show_name))
 
+    out_dir = os.path.dirname(output_file)
+    check_dir(out_dir)
 
     if item.information:
         info_file = output_file.split('.')[0] + ".txt"
