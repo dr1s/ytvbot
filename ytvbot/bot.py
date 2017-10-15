@@ -39,9 +39,9 @@ def usage():
     print(" -j | --json [output_file]: save results as json file")
     print(" -z | --network [network_name]: show results for network")
 
-def check_dir(dir):
-    if not os.path.isdir(dir):
-        os.mkdir(dir)
+def check_dir(directory):
+    if not os.path.isdir(directory):
+        os.mkdir(directory)
 
 
 def setup_dir():
