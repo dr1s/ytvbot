@@ -107,10 +107,9 @@ def main():
             for recording in recordings:
                 rec_dict = recording.dict()
                 recordings_list.append(rec_dict)
-            json = json.dumps(recordings_list, f, indent=2,
-                sort_keys=True, ensure_ascii=False)
             with codecs.open(json_file, 'w', 'utf-8') as f:
-                f.write(json)
+                f.write(json.dumps(recordings_list, f, indent=2,
+                    sort_keys=True, ensure_ascii=False))
 
     if recordings:
         print_recordings(recordings, ['id', 'show_name', 'title',
