@@ -1,6 +1,7 @@
 from ..log import add_logger
 import exporter
-import xml.etree.ElementTree as ET
+from lxml import etree as ET
+import codecs
 
 class Recording(object):
 
@@ -136,7 +137,7 @@ class Recording(object):
 
     def write_kodi_nfo(self, filename):
         self.logger.debug("Writing kodi nfo file")
-        root = ET.Element('tvshow')
+        root = ET.Element('episodedetails')
         title = self.__add_sub_element__(root,
             self.show_name, 'title')
         showtitle = self.__add_sub_element__(root,
@@ -158,5 +159,9 @@ class Recording(object):
             self.network, 'studio')
 
 
-        tree = ET.ElementTree(root)
-        tree.write(filename, encoding='utf-8', xml_declaration=True)
+        with codecs.open(filename, 'w', 'utf-8') as f:
+            xml_data = ET.tostring(root,
+                xml_declaration=True,
+                standalone='yes',
+                pretty_print=True)
+            f.write(xml_data)
