@@ -127,7 +127,7 @@ class Recording(object):
 
         return selected
 
-    def __add_sub_element__(root, element, tag):
+    def __add_sub_element__(self, root, element, tag):
         if element:
             element_tag = ET.SubElement(root, tag, text=element)
             return element_tag
