@@ -129,14 +129,16 @@ class Recording(object):
 
     def __add_sub_element__(self, root, element, tag):
         if element:
-            element_tag = ET.SubElement(root, tag, text=element)
+            element_tag = ET.SubElement(root, tag)
+            element_tag.text = element
             return element_tag
 
 
     def write_kodi_nfo(self, filename):
         self.logger.debug("Writing kodi nfo file")
         root = ET.Element('tvshow')
-        title = ET.SubElement(root, 'title', txt=self.show_name)
+        title = self.__add_sub_element__(root,
+            self.show_name, 'title')
         showtitle = self.__add_sub_element__(root,
             self.title, 'showtitle')
         season = self.__add_sub_element__(root,
