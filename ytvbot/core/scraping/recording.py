@@ -161,6 +161,7 @@ class Recording(object):
 
         with codecs.open(filename, 'w', 'utf-8') as f:
             xml_data = etree.tostring(root,
+                encoding='utf-8',
                 xml_declaration=True,
                 standalone='yes',
                 pretty_print=True)
