@@ -33,8 +33,10 @@ class Manager(object):
             check_dir(out_dir)
 
             if recording.information:
-                info_file = output_file.split('.')[0] + ".txt"
+                info_file = os.path.splitext(output_file)[0] + ".txt"
                 recording.write_information_file(info_file)
+                nfo_file = os.path.splitext(output_file)[0] + ".nfo"
+                recording.write_kodi_nfo(nfo_file)
 
 
             downloader = fileDownloader.DownloadFile(download_link,

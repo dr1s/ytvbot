@@ -1,5 +1,6 @@
 from ..log import add_logger
 import exporter
+import xml.etree.ElementTree as ET
 
 class Recording(object):
 
@@ -125,3 +126,35 @@ class Recording(object):
                 break
 
         return selected
+
+    def __add_sub_element__(root, element, tag):
+        if element:
+            element_tag = ET.SubElement(root, tag, text=element)
+            return element_tag
+
+
+    def write_kodi_nfo(self, filename):
+        self.logger.debug("Writing kodi nfo file")
+        root = ET.Element('tvshow')
+        title = ET.SubElement(root, 'title', txt=self.show_name)
+        showtitle = self.__add_sub_element__(root,
+            self.title, 'showtitle')
+        season = self.__add_sub_element__(root,
+            self.season, 'season')
+        episode = self.__add_sub_element__(root,
+            self.episode, 'episode')
+        plot = self.__add_sub_element__(root,
+            self.information[0], 'plot')
+        genre = self.__add_sub_element__(root,
+            self.genre, 'genre')
+
+        airdate = self.__add_sub_element__(root,
+            self.get_date(), 'airdate')
+        external_id = self.__add_sub_element__(root,
+            self.id, 'id')
+        studio = self.__add_sub_element__(root,
+            self.network, 'studio')
+
+
+        tree = ET.ElementTree(root)
+        tree.write(filename, encoding='utf-8', xml_declaration=True)
