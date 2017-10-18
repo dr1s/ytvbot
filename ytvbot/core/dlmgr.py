@@ -36,7 +36,7 @@ class Manager(object):
                 info_file = os.path.splitext(output_file)[0] + ".txt"
                 recording.write_information_file(info_file)
                 nfo_file = os.path.splitext(output_file)[0] + ".nfo"
-                recording.write_kodi_nfo(nfo_file)
+                recording.write_kodi_nfo(nfo_file, output_file)
 
 
             downloader = fileDownloader.DownloadFile(download_link,

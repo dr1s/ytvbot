@@ -2,6 +2,8 @@ from ..log import add_logger
 import exporter
 from lxml import etree
 import codecs
+import os
+
 
 class Recording(object):
 
@@ -135,28 +137,34 @@ class Recording(object):
             return element_tag
 
 
-    def write_kodi_nfo(self, filename):
+    def write_kodi_nfo(self, filename, videofile):
         self.logger.debug("Writing kodi nfo file")
         root = etree.Element('episodedetails')
-        title = self.__add_sub_element__(root,
+        self.__add_sub_element__(root,
             self.show_name, 'title')
-        showtitle = self.__add_sub_element__(root,
+        self.__add_sub_element__(root,
             self.title, 'showtitle')
-        season = self.__add_sub_element__(root,
+        self.__add_sub_element__(root,
             self.season, 'season')
-        episode = self.__add_sub_element__(root,
+        self.__add_sub_element__(root,
             self.episode, 'episode')
-        plot = self.__add_sub_element__(root,
+        self.__add_sub_element__(root,
             self.information[0], 'plot')
-        genre = self.__add_sub_element__(root,
+        self.__add_sub_element__(root,
             self.genre, 'genre')
 
-        airdate = self.__add_sub_element__(root,
+        self.__add_sub_element__(root,
             self.get_date(), 'airdate')
-        external_id = self.__add_sub_element__(root,
+        self.__add_sub_element__(root,
             self.id, 'id')
-        studio = self.__add_sub_element__(root,
+        self.__add_sub_element__(root,
             self.network, 'studio')
+        self.__add_sub_element__(root,
+            os.path.dirname(videofile), 'path')
+        self.__add_sub_element__(root,
+            videofile, 'filenameandpath')
+        self.__add_sub_element__(root,
+            videofile, 'basepath')
 
 
         with codecs.open(filename, 'w', 'utf-8') as f:
