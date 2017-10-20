@@ -8,7 +8,7 @@ setup(
     author='drs',
     license='MIT',
     description='Download latest recordings from youtv',
-    install_requires=["selenium", "pyvirtualdisplay", "psutil", "prettytable"],
+    install_requires=["selenium", "pyvirtualdisplay", "psutil", "prettytable", "lxml", "tqdm"],
     packages=find_packages(),
     include_package_data = True,
     entry_points={'console_scripts': ['ytvbot=ytvbot.bot:main']},

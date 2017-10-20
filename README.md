@@ -14,9 +14,11 @@ Download recordings form youtv.de
 * xauth
 
 ## Install
+* Install python and dependencies
+  `sudo apt install python-dev python-pip libxml2-dev libxslt1-dev`
 * Install geckodriver from https://github.com/mozilla/geckodriver/releases
 * Install firefox
-    `sudo apt install firefox`
+    `sudo apt install firefox` or `sudo apt install firefox-esr`
     `brew install firefox`
     etc.
 * Install Xvfb and xauth for headless mode on Linux
