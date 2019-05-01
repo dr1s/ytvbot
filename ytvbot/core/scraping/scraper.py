@@ -66,9 +66,15 @@ class Scraper:
 
     def get_stream_url(self, url):
         stream_url = '%s/streamen' % url
+        self.logger.debug('Trying to find the stream url: %s' % url)
         self.browser.get(stream_url)
+        if self.browser.current_url == self.recorder_url:
+            self.logger.debug('Can\'t use stream url: %s' % stream_url)
+            return None
+        self.logger.debug('Trying to find the video element')
         stream_video = self.browser.find_element_by_id('youtv-video')
         download_url = stream_video.get_attribute('src')
+        self.logger.debug(url_tmp)
         self.logger.debug(download_url)
         return download_url
 
@@ -241,10 +247,14 @@ class Scraper:
             self.browser.get(url)
 
         links = self.get_recording_links(url)
-        self.logger.debug(len(links))
         if len(links) < 1:
-            links.append(self.get_stream_url(url))
+            links_new = self.get_stream_url(url)
+            if links_new:
+                links.append(links_new)
             self.browser.get(url)
+            if len(links) < 1:
+                self.logger.debug('No downloadable link found for %s' % url)
+                return None
         name = self.get_recording_showname(url)
         title = self.get_recording_title(url)
         information = self.get_recording_information(url)
@@ -268,8 +278,12 @@ class Scraper:
 
         recordings_urls = self.get_available_recordings(search)
 
+        self.logger.debug('recording_urls: %s' % recordings_urls)
         for url in recordings_urls:
-            recordings.append(self.get_recording_from_url(url))
+            self.logger.debug('Getting recordings from url: %s' % url)
+            rec = self.get_recording_from_url(url)
+            if rec:
+                recordings.append(rec)
 
         #reverse recordings list as the last one is the oldest one
         recordings.reverse()

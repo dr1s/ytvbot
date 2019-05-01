@@ -29,7 +29,7 @@ class Browser:
 
         if 'Linux' in platform.uname():
             self.logger.info('starting headless mode')
-            self.display = Display(visible=0, size=(1024, 768))
+            self.display = Display(visible=0, size=(1680, 1050))
             self.display.start()
         else:
             self.logger.info(
@@ -70,29 +70,25 @@ class Browser:
         self.logger.info('Loggin in')
         self.browser.get('https://www.youtv.de/login')
 
-        cookies_file = "cookies"
-        if self.config_dir:
-            cookies_file = os.path.join(self.config_dir, cookies_file)
+        # cookies_file = "cookies"
+        # if self.config_dir:
+        #     cookies_file = os.path.join(self.config_dir, cookies_file)
 
-        if os.path.isfile(cookies_file):
-            self.__import_cookies_file__(cookies_file)
-        else:
-            self.logger.debug('No cookies found, logging in')
-            login_email = self.browser.find_element_by_id("session_email")
-            login_email.send_keys(email)
-            login_password = self.browser.find_element_by_id(
-                'session_password')
-            login_password.send_keys(password)
+        #if os.path.isfile(cookies_file):
+        #    self.__import_cookies_file__(cookies_file)
+        #else:
+        #self.logger.debug('No cookies found, logging in')
+        login_email = self.browser.find_element_by_id("session_email")
+        login_email.send_keys(email)
+        login_password = self.browser.find_element_by_id('session_password')
+        login_password.send_keys(password)
 
-            login_button = self.browser.find_element_by_xpath(
-                "//input[@value='Anmelden']")
-            login_button.click()
-
+        WebDriverWait(self.browser, self.timeout).until(
+            EC.element_to_be_clickable((By.XPATH,
+                                       "//input[@value='Anmelden']"))).click()
         self.__check_logged_in__()
 
-        if self.logged_in:
-            pickle.dump(self.browser.get_cookies(), open(cookies_file, "wb"))
-        else:
+        if not self.logged_in:
             self.logger.debug("Login failed")
             self.destroy()
             sys.exit()

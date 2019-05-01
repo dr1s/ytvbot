@@ -3,6 +3,7 @@
 
 import os
 import json
+import time
 import codecs
 import argparse
 
@@ -48,6 +49,42 @@ def get_recordings(conf_dir, search=None, network=None):
     return recordings
 
 
+def process_recordings(ytvbot_dir,
+                       output_dir,
+                       progress_bar=None,
+                       download_files=True,
+                       search=None,
+                       network=None,
+                       json_file=None):
+    recordings = get_recordings(ytvbot_dir, search, network)
+
+    if recordings:
+        print_recordings(recordings, [
+            'id', 'show_name', 'title', 'date', 'start_time', 'end_time',
+            'network'
+        ])
+    else:
+        logger.debug('No recordings found to print')
+
+    recordings_list = list()
+
+    for recording in recordings:
+        rec_dict = recording.dict()
+        recordings_list.append(rec_dict)
+    if json_file:
+        with codecs.open(json_file, 'w', 'utf-8') as f:
+            f.write(
+                json.dumps(
+                    recordings_list,
+                    indent=2,
+                    sort_keys=True,
+                    ensure_ascii=False))
+
+    if download_files and recordings:
+        logger.info("Start download recordings")
+        mgr = Manager(output_dir, recordings, progress_bar=progress_bar)
+        mgr.start()
+
 def main():
 
     parser = argparse.ArgumentParser(
@@ -79,12 +116,13 @@ def main():
     parser.add_argument(
         '-s', '--search', help='search for show name', default=None)
     parser.add_argument(
-        '-j',
-        '--json',
-        help='save or load results to/from json file',
-        default=None)
-    parser.add_argument(
         '-z', '--network', help='show results for network', default=None)
+    parser.add_argument(
+        '-x',
+        '--sleep',
+        help='continuesly poll for new episodes',
+        default=None,
+        type=int)
     args = parser.parse_args()
 
     global email
@@ -94,52 +132,24 @@ def main():
     ytvbot_dir = args.configdir
     output_dir = args.output
     download_files = args.nodownload
-    link_output = args.links
     progress_bar = args.progress
     search = args.search
-    json_file = args.json
     network = args.network
 
     ytvbot_dir = setup_config_dir(ytvbot_dir)
 
-    if not json_file or (json_file and not os.path.exists(json_file)):
-        recordings = get_recordings(ytvbot_dir, search, network)
 
-    if json_file:
-        if os.path.isfile(json_file):
-            logger.debug('Importig json file: %s' % json_file)
-            recordings = import_json_file(json_file)
-        else:
-            logger.debug("Writing json file to: %s" % link_output)
-            recordings_list = []
-            for recording in recordings:
-                rec_dict = recording.dict()
-                recordings_list.append(rec_dict)
-            with codecs.open(json_file, 'w', 'utf-8') as f:
-                f.write(
-                    json.dumps(
-                        recordings_list,
-                        indent=2,
-                        sort_keys=True,
-                        ensure_ascii=False))
-
-    if recordings:
-        print_recordings(recordings, [
-            'id', 'show_name', 'title', 'date', 'start_time', 'end_time',
-            'network'
-        ])
-    else:
-        logger.debug('No recordings found to print')
-
-    if link_output:
-        with codecs.open(link_output, 'w', 'utf-8'):
-            os.utime(link_output, None)
-        write_links_to_file(recordings, link_output)
-
-    if download_files and recordings:
-        logger.info("Start download recordings")
-        mgr = Manager(output_dir, recordings, progress_bar=progress_bar)
-        mgr.start()
+    while True:
+        process_recordings(
+            ytvbot_dir,
+            output_dir,
+            progress_bar=progress_bar,
+            search=search,
+            network=network,
+            json_file=args.links)
+        sleep_time = 60 * int(args.sleep)
+        logger.info('Checking again in %i minutes.' % args.sleep)
+        time.sleep(sleep_time)
 
 
 logger = add_logger('ytvbot')
