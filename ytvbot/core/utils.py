@@ -2,6 +2,7 @@
 import os
 import codecs
 
+
 def check_dir(directory):
     if not os.path.isdir(directory):
         os.mkdir(directory)

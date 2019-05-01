@@ -18,8 +18,8 @@ from selenium.common.exceptions import TimeoutException
 
 from ..log import add_logger
 
-class Browser:
 
+class Browser:
     def __init__(self, timeout=20, config_dir=None):
 
         reload(sys)
@@ -49,8 +49,7 @@ class Browser:
     def __import_cookies_file__(self, cookies_file):
 
         self.logger.debug('cookies file: %s' % cookies_file)
-        self.logger.debug(
-            "cookies found, adding to current browser session")
+        self.logger.debug("cookies found, adding to current browser session")
         cookies = pickle.load(open(cookies_file, "rb"))
         for cookie in cookies:
             self.browser.add_cookie(cookie)
@@ -58,8 +57,8 @@ class Browser:
 
     def __check_logged_in__(self):
         try:
-            element_present = EC.presence_of_element_located((
-                By.LINK_TEXT,'Mein Account'))
+            element_present = EC.presence_of_element_located((By.LINK_TEXT,
+                                                              'Mein Account'))
             WebDriverWait(self.browser, self.timeout).until(element_present)
             self.logger.info('Logged in.')
             self.logged_in = True
@@ -92,13 +91,11 @@ class Browser:
         self.__check_logged_in__()
 
         if self.logged_in:
-            pickle.dump( self.browser.get_cookies() , open(cookies_file,"wb"))
+            pickle.dump(self.browser.get_cookies(), open(cookies_file, "wb"))
         else:
             self.logger.debug("Login failed")
             self.destroy()
             sys.exit()
-
-
 
     def destroy(self):
 

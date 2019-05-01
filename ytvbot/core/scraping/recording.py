@@ -6,11 +6,18 @@ import os
 
 
 class Recording(object):
-
-    def __init__(   self, url, show_name, links, title=None,
-                    information=None, start_date=None,
-                    stop_date=None, genre=None,
-                    network=None, season=None, episode=None):
+    def __init__(self,
+                 url,
+                 show_name,
+                 links,
+                 title=None,
+                 information=None,
+                 start_date=None,
+                 stop_date=None,
+                 genre=None,
+                 network=None,
+                 season=None,
+                 episode=None):
         self.url = url
         self.show_name = show_name
         self.links = links
@@ -26,17 +33,15 @@ class Recording(object):
 
         self.logger = add_logger('recording %s' % self.id)
 
-
     def get_start_time(self, sep=':'):
 
         if not sep:
             sep = ":"
         hour = self.start_date.strftime('%H')
         minute = self.start_date.strftime('%M')
-        time = "%s%s%s" %(hour, sep, minute)
+        time = "%s%s%s" % (hour, sep, minute)
 
         return time
-
 
     def get_end_time(self, sep=':'):
 
@@ -44,10 +49,9 @@ class Recording(object):
             sep = ":"
         hour = self.stop_date.strftime('%H')
         minute = self.stop_date.strftime('%M')
-        time = "%s%s%s" %(hour, sep, minute)
+        time = "%s%s%s" % (hour, sep, minute)
 
         return time
-
 
     def get_date(self, sep='-'):
 
@@ -59,7 +63,6 @@ class Recording(object):
         time = "%s%s%s%s%s" % (year, sep, month, sep, day)
 
         return time
-
 
     def get_attribute(self, name, sep=None):
 
@@ -96,10 +99,8 @@ class Recording(object):
 
         return rec_list
 
-
     def write_information_file(self, output_file):
         exporter.write_information_file(self, output_file)
-
 
     def format_output_filename(self, fname=None):
         if not fname:
@@ -109,7 +110,6 @@ class Recording(object):
         filename = fname_tmp.format(**self.dict())
 
         return filename
-
 
     def select_download_link(self, quality_priority='hd'):
 
@@ -136,39 +136,26 @@ class Recording(object):
             element_tag.text = element
             return element_tag
 
-
     def write_kodi_nfo(self, filename, videofile):
         self.logger.debug("Writing kodi nfo file")
         root = etree.Element('episodedetails')
-        self.__add_sub_element__(root,
-            self.show_name, 'title')
-        self.__add_sub_element__(root,
-            self.title, 'showtitle')
-        self.__add_sub_element__(root,
-            self.season, 'season')
-        self.__add_sub_element__(root,
-            self.episode, 'episode')
-        self.__add_sub_element__(root,
-            self.information[0], 'plot')
-        self.__add_sub_element__(root,
-            self.genre, 'genre')
+        self.__add_sub_element__(root, self.show_name, 'title')
+        self.__add_sub_element__(root, self.title, 'showtitle')
+        self.__add_sub_element__(root, self.season, 'season')
+        self.__add_sub_element__(root, self.episode, 'episode')
+        self.__add_sub_element__(root, self.information[0], 'plot')
+        self.__add_sub_element__(root, self.genre, 'genre')
 
-        self.__add_sub_element__(root,
-            self.get_date(), 'airdate')
-        self.__add_sub_element__(root,
-            self.id, 'id')
-        self.__add_sub_element__(root,
-            self.network, 'studio')
-        self.__add_sub_element__(root,
-            os.path.dirname(videofile), 'path')
-        self.__add_sub_element__(root,
-            videofile, 'filenameandpath')
-        self.__add_sub_element__(root,
-            videofile, 'basepath')
-
+        self.__add_sub_element__(root, self.get_date(), 'airdate')
+        self.__add_sub_element__(root, self.id, 'id')
+        self.__add_sub_element__(root, self.network, 'studio')
+        self.__add_sub_element__(root, os.path.dirname(videofile), 'path')
+        self.__add_sub_element__(root, videofile, 'filenameandpath')
+        self.__add_sub_element__(root, videofile, 'basepath')
 
         with codecs.open(filename, 'w', 'utf-8') as f:
-            xml_data = etree.tostring(root,
+            xml_data = etree.tostring(
+                root,
                 encoding='utf-8',
                 xml_declaration=True,
                 standalone='yes',

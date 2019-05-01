@@ -15,9 +15,9 @@ from core.dlmgr import Manager
 from core.utils import setup_config_dir
 from selenium.common.exceptions import WebDriverException
 
-
 email = None
 password = None
+
 
 def usage():
     print("usage: ytvbot [arguments]")
@@ -32,7 +32,6 @@ def usage():
     print(" -s | --search [show_name]: only look for show_name")
     print(" -j | --json [output_file]: save results as json file")
     print(" -z | --network [network_name]: show results for network")
-
 
 
 def get_recordings(conf_dir, search=None, network=None):
@@ -54,28 +53,38 @@ def main():
     parser = argparse.ArgumentParser(
         description='Download recordings from ytv')
 
-    parser.add_argument('-u', '--user',
-        help='email address', default=None)
-    parser.add_argument('-p', '--password',
-        help='passord', default=None)
-    parser.add_argument('-c', '--configdir',
-        help='path to configuration directory', default=None)
-    parser.add_argument('-o', '--output',
-        help='path to output directory', default=None)
-    parser.add_argument('-n', '--nodownload',
-        help='Don\'t download anything', action='store_false',
+    parser.add_argument('-u', '--user', help='email address', default=None)
+    parser.add_argument('-p', '--password', help='passord', default=None)
+    parser.add_argument(
+        '-c',
+        '--configdir',
+        help='path to configuration directory',
+        default=None)
+    parser.add_argument(
+        '-o', '--output', help='path to output directory', default=None)
+    parser.add_argument(
+        '-n',
+        '--nodownload',
+        help='Don\'t download anything',
+        action='store_false',
         default=True)
-    parser.add_argument('-l', '--links',
-        help='save links in this file', default=None)
-    parser.add_argument('-#', '--progress',
+    parser.add_argument(
+        '-l', '--links', help='save links in this file', default=None)
+    parser.add_argument(
+        '-#',
+        '--progress',
         help='show progress bar when downloading files',
-        action='store_true', default=False)
-    parser.add_argument('-s', '--search',
-        help='search for show name', default=None)
-    parser.add_argument('-j', '--json',
-        help='save or load results to/from json file', default=None)
-    parser.add_argument('-z', '--network',
-        help='show results for network', default=None)
+        action='store_true',
+        default=False)
+    parser.add_argument(
+        '-s', '--search', help='search for show name', default=None)
+    parser.add_argument(
+        '-j',
+        '--json',
+        help='save or load results to/from json file',
+        default=None)
+    parser.add_argument(
+        '-z', '--network', help='show results for network', default=None)
     args = parser.parse_args()
 
     global email
@@ -90,7 +99,6 @@ def main():
     search = args.search
     json_file = args.json
     network = args.network
-
 
     ytvbot_dir = setup_config_dir(ytvbot_dir)
 
@@ -108,12 +116,18 @@ def main():
                 rec_dict = recording.dict()
                 recordings_list.append(rec_dict)
             with codecs.open(json_file, 'w', 'utf-8') as f:
-                f.write(json.dumps(recordings_list, indent=2,
-                    sort_keys=True, ensure_ascii=False))
+                f.write(
+                    json.dumps(
+                        recordings_list,
+                        indent=2,
+                        sort_keys=True,
+                        ensure_ascii=False))
 
     if recordings:
-        print_recordings(recordings, ['id', 'show_name', 'title',
-                'date', 'start_time', 'end_time', 'network'])
+        print_recordings(recordings, [
+            'id', 'show_name', 'title', 'date', 'start_time', 'end_time',
+            'network'
+        ])
     else:
         logger.debug('No recordings found to print')
 
@@ -126,6 +140,7 @@ def main():
         logger.info("Start download recordings")
         mgr = Manager(output_dir, recordings, progress_bar=progress_bar)
         mgr.start()
+
 
 logger = add_logger('ytvbot')
 

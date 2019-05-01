@@ -7,8 +7,8 @@ from selenium.common.exceptions import NoSuchElementException
 from recording import Recording
 from ..log import add_logger
 
-class Scraper:
 
+class Scraper:
     def __init__(self, browser):
 
         self.logger = add_logger('scraper')
@@ -16,7 +16,6 @@ class Scraper:
         self.browser = browser
         self.logged_in = False
         self.recorder_url = "https://www.youtv.de/videorekorder"
-
 
     def get_recording_link(self, title):
 
@@ -33,7 +32,6 @@ class Scraper:
         else:
             return None
 
-
     def load_recordings_page(self):
 
         self.logger.info('Getting available recordings')
@@ -41,7 +39,6 @@ class Scraper:
         # Scroll to bottom to load all recordings
         self.browser.execute_script(
             "window.scrollTo(0, document.body.scrollHeight);")
-
 
     def get_available_recordings(self, name=None):
 
@@ -59,8 +56,7 @@ class Scraper:
                     pass
                 if title_tmp:
                     if name in title_tmp.text:
-                        recordings.append(
-                            self.get_recording_link(title))
+                        recordings.append(self.get_recording_link(title))
             else:
                 recording_tmp = self.get_recording_link(title)
                 if recording_tmp:
@@ -68,12 +64,19 @@ class Scraper:
 
         return recordings
 
+    def get_stream_url(self, url):
+        stream_url = '%s/streamen' % url
+        self.browser.get(stream_url)
+        stream_video = self.browser.find_element_by_id('youtv-video')
+        download_url = stream_video.get_attribute('src')
+        self.logger.debug(download_url)
+        return download_url
 
     def get_recording_links(self, url):
 
         self.logger.info('Getting links from: %s' % url)
 
-        downloads =  self.browser.find_elements_by_partial_link_text(
+        downloads = self.browser.find_elements_by_partial_link_text(
             'Definition')
         downloads += self.browser.find_elements_by_partial_link_text(
             'Qualität')
@@ -81,11 +84,10 @@ class Scraper:
         links = []
         for d in downloads:
             links.append(d.get_attribute('href').split('?')[0])
-        self.logger.debug('links for recording %s found %s' %
-            (url, str(links)))
+        self.logger.debug(
+            'links for recording %s found %s' % (url, str(links)))
 
         return links
-
 
     def get_recording_showname(self, url):
 
@@ -102,11 +104,11 @@ class Scraper:
             try:
                 show_tmp = self.browser.find_element_by_class_name(
                     "broadcast-details-header--content")
-                show_name = show_tmp.find_element_by_tag_name('h3').text.title()
+                show_name = show_tmp.find_element_by_tag_name(
+                    'h3').text.title()
             except NoSuchElementException:
                 self.logger.debug("Can't find any show name for: %s" % url)
         return show_name
-
 
     def get_recording_title(self, url):
 
@@ -121,7 +123,6 @@ class Scraper:
 
         return title
 
-
     def __get_desc_list__(self, url):
 
         desc_list = None
@@ -133,7 +134,6 @@ class Scraper:
         except NoSuchElementException:
             self.logger.debug("Can't find desc list: %s" % url)
         return desc_list
-
 
     def get_recording_dates(self, url):
 
@@ -147,16 +147,14 @@ class Scraper:
             start_tmp = date + ':' + start_time
             stop_tmp = date + ':' + stop_time
 
-            start_date = datetime.datetime.strptime(
-                start_tmp, "%d.%m.%Y:%H:%M")
-            stop_date = datetime.datetime.strptime(
-                stop_tmp, "%d.%m.%Y:%H:%M")
+            start_date = datetime.datetime.strptime(start_tmp,
+                                                    "%d.%m.%Y:%H:%M")
+            stop_date = datetime.datetime.strptime(stop_tmp, "%d.%m.%Y:%H:%M")
 
         else:
             self.logger.debug("No recording date found for: %s" % url)
 
         return [start_date, stop_date]
-
 
     def get_recording_genre(self, url):
 
@@ -177,7 +175,6 @@ class Scraper:
 
         return genre
 
-
     def __get__next_item_from_desc_list__(self, url, search):
 
         item = None
@@ -192,27 +189,24 @@ class Scraper:
         if desc_list:
             for i in range(0, len(desc_list)):
                 if desc_list[i].strip(',') in search_list:
-                    item = desc_list[i+1]
+                    item = desc_list[i + 1]
         else:
-            self.logger.debug("Can't find %s in desc list: %s" %
-                (str(search), url))
+            self.logger.debug(
+                "Can't find %s in desc list: %s" % (str(search), url))
 
         return item
 
-
     def get_recording_episode(self, url):
 
-        episode = self.__get__next_item_from_desc_list__(url,
-            ['Episode', 'Folge'])
+        episode = self.__get__next_item_from_desc_list__(
+            url, ['Episode', 'Folge'])
         return episode
-
 
     def get_recording_season(self, url):
 
-        season = self.__get__next_item_from_desc_list__(url,
-            ['Season', 'Staffel'])
+        season = self.__get__next_item_from_desc_list__(
+            url, ['Season', 'Staffel'])
         return season
-
 
     def get_recording_information(self, url):
 
@@ -228,7 +222,6 @@ class Scraper:
             self.logger.debug("No information found for: %s" % url)
         return information
 
-
     def get_recording_network(self, url):
 
         network = None
@@ -242,13 +235,16 @@ class Scraper:
 
         return network
 
-
     def get_recording_from_url(self, url):
 
         if not self.browser.current_url == url:
             self.browser.get(url)
 
         links = self.get_recording_links(url)
+        self.logger.debug(len(links))
+        if len(links) < 1:
+            links.append(self.get_stream_url(url))
+            self.browser.get(url)
         name = self.get_recording_showname(url)
         title = self.get_recording_title(url)
         information = self.get_recording_information(url)
@@ -259,18 +255,16 @@ class Scraper:
         season = self.get_recording_season(url)
 
         recording = Recording(url, name, links, title, information,
-            recording_dates[0], recording_dates[1], genre, network,
-            season, episode)
+                              recording_dates[0], recording_dates[1], genre,
+                              network, season, episode)
         return recording
-
 
     def get_recordings(self, search=None, network=None):
         recordings = []
-        recordings_urls= []
+        recordings_urls = []
 
         if not self.browser.current_url == self.recorder_url:
             self.load_recordings_page()
-
 
         recordings_urls = self.get_available_recordings(search)
 

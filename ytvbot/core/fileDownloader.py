@@ -16,6 +16,7 @@ from time import time, sleep
 
 version = "0.4.0"
 
+
 class DownloadFile(object):
     """This class is used for downloading files from the internet via http or ftp.
     It supports resuming downloads.
@@ -43,8 +44,17 @@ class DownloadFile(object):
             downloader.resume()
     """
 
-    def __init__(self, url=None, localFileName=None, timeout=120.0, autoretry=False, retries=5,
-                 fast_start=False, rate_limit_on=False, rate_limit=500, rate_burst=1000, progress_bar=None):
+    def __init__(self,
+                 url=None,
+                 localFileName=None,
+                 timeout=120.0,
+                 autoretry=False,
+                 retries=5,
+                 fast_start=False,
+                 rate_limit_on=False,
+                 rate_limit=500,
+                 rate_burst=1000,
+                 progress_bar=None):
         self.url = url
         self.urlFileName = None
         self.progress = 0
@@ -63,7 +73,7 @@ class DownloadFile(object):
                 self.urlFilesize = None
         else:
             self.urlFilesize = None
-        if not self.localFileName: #if no filename given pulls filename from the url
+        if not self.localFileName:  #if no filename given pulls filename from the url
             self.localFileName = self.getUrlFilename(self.url)
         self.rate_limit_on = rate_limit_on
         self.rate_limit = rate_limit
@@ -82,14 +92,21 @@ class DownloadFile(object):
             curSize = self.getLocalFileSize()
             if self.progress_bar:
                 if self.fileSize > sys.maxint:
-                    pbar = tqdm(total=long(self.fileSize)//8192, unit_scale=True,
-                            initial=curSize//8192, dynamic_ncols=True,
-                            desc=os.path.basename(self.localFileName),
-                            bar_format="{l_bar}{bar} | [{elapsed}<{remaining}]")
+                    pbar = tqdm(
+                        total=long(self.fileSize) // 8192,
+                        unit_scale=True,
+                        initial=curSize // 8192,
+                        dynamic_ncols=True,
+                        desc=os.path.basename(self.localFileName),
+                        bar_format="{l_bar}{bar} | [{elapsed}<{remaining}]")
                 else:
-                    pbar = tqdm(total=int(self.fileSize), unit_scale=True,
-                            initial=curSize, unit="b", dynamic_ncols=True,
-                            desc=os.path.basename(self.localFileName))
+                    pbar = tqdm(
+                        total=int(self.fileSize),
+                        unit_scale=True,
+                        initial=curSize,
+                        unit="b",
+                        dynamic_ncols=True,
+                        desc=os.path.basename(self.localFileName))
 
         while 1:
             if self.rate_limit_on:
@@ -116,13 +133,12 @@ class DownloadFile(object):
                 callBack(cursize=self.cur)
         pbar.close()
 
-
     def __retry__(self):
         """auto-resumes up to self.retries"""
         if self.retries > self.curretry:
-                self.curretry += 1
-                if self.getLocalFileSize() != self.urlFilesize:
-                    self.resume()
+            self.curretry += 1
+            if self.getLocalFileSize() != self.urlFilesize:
+                self.resume()
         else:
             print 'retries all used up'
             return False, "Retries Exhausted"
@@ -134,9 +150,9 @@ class DownloadFile(object):
             return False
         self.cur = curSize
         if restart:
-            f = open(self.localFileName , "wb")
+            f = open(self.localFileName, "wb")
         else:
-            f = open(self.localFileName , "ab")
+            f = open(self.localFileName, "ab")
         req = urllib2.Request(self.url)
         req.headers['Range'] = 'bytes=%s-%s' % (curSize, self.getUrlFileSize())
         urllib2Obj = urllib2.urlopen(req, timeout=self.timeout)
@@ -175,7 +191,7 @@ class DownloadFile(object):
         """starts the file download"""
         self.curretry = 0
         self.cur = 0
-        f = open(self.localFileName , "wb")
+        f = open(self.localFileName, "wb")
         try:
             urllib2Obj = urllib2.urlopen(self.url, timeout=self.timeout)
             self.__downloadFile__(urllib2Obj, f, callBack=callBack)
@@ -183,7 +199,6 @@ class DownloadFile(object):
             self.logger.debug("Can't download file: %s" % self.url)
 
         return True
-
 
     def resume(self, callBack=None):
         """attempts to resume file download"""
