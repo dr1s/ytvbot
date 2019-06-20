@@ -12,12 +12,12 @@ def setup_config_dir(config_dir):
 
     if not config_dir:
         home = os.path.expanduser("~")
-        config_dir = os.path.join(home, '.ytvbot')
+        config_dir = os.path.join(home, ".ytvbot")
 
     check_dir(config_dir)
 
-    cache_file = os.path.join(config_dir, 'cache')
+    cache_file = os.path.join(config_dir, "cache")
     if not os.path.exists(cache_file):
-        with codecs.open(cache_file, 'a', 'utf-8'):
+        with codecs.open(cache_file, "a", "utf-8"):
             os.utime(cache_file, None)
     return config_dir

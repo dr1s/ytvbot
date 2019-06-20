@@ -44,17 +44,19 @@ class DownloadFile(object):
             downloader.resume()
     """
 
-    def __init__(self,
-                 url=None,
-                 localFileName=None,
-                 timeout=120.0,
-                 autoretry=False,
-                 retries=5,
-                 fast_start=False,
-                 rate_limit_on=False,
-                 rate_limit=500,
-                 rate_burst=1000,
-                 progress_bar=None):
+    def __init__(
+        self,
+        url=None,
+        localFileName=None,
+        timeout=120.0,
+        autoretry=False,
+        retries=5,
+        fast_start=False,
+        rate_limit_on=False,
+        rate_limit=500,
+        rate_burst=1000,
+        progress_bar=None,
+    ):
         self.url = url
         self.urlFileName = None
         self.progress = 0
@@ -73,7 +75,7 @@ class DownloadFile(object):
                 self.urlFilesize = None
         else:
             self.urlFilesize = None
-        if not self.localFileName:  #if no filename given pulls filename from the url
+        if not self.localFileName:  # if no filename given pulls filename from the url
             self.localFileName = self.getUrlFilename(self.url)
         self.rate_limit_on = rate_limit_on
         self.rate_limit = rate_limit
@@ -88,7 +90,7 @@ class DownloadFile(object):
         pbar = None
         if not self.fast_start:
             self.fileSize = self.getUrlFileSize()
-            #Progress bar only works if we have the fileSize
+            # Progress bar only works if we have the fileSize
             curSize = self.getLocalFileSize()
             if self.progress_bar:
                 if self.fileSize > sys.maxint:
@@ -98,7 +100,8 @@ class DownloadFile(object):
                         initial=curSize // 8192,
                         dynamic_ncols=True,
                         desc=os.path.basename(self.localFileName),
-                        bar_format="{l_bar}{bar} | [{elapsed}<{remaining}]")
+                        bar_format="{l_bar}{bar} | [{elapsed}<{remaining}]",
+                    )
                 else:
                     pbar = tqdm(
                         total=int(self.fileSize),
@@ -106,7 +109,8 @@ class DownloadFile(object):
                         initial=curSize,
                         unit="b",
                         dynamic_ncols=True,
-                        desc=os.path.basename(self.localFileName))
+                        desc=os.path.basename(self.localFileName),
+                    )
 
         while 1:
             if self.rate_limit_on:
@@ -116,7 +120,7 @@ class DownloadFile(object):
             try:
                 data = urlObj.read(8192)
             except (socket.timeout, socket.error) as t:
-                print "caught ", t
+                print("caught ", t)
                 self.__retry__()
                 break
             if not data:
@@ -140,7 +144,7 @@ class DownloadFile(object):
             if self.getLocalFileSize() != self.urlFilesize:
                 self.resume()
         else:
-            print 'retries all used up'
+            print("retries all used up")
             return False, "Retries Exhausted"
 
     def __startHttpResume__(self, restart=None, callBack=None):
@@ -154,7 +158,7 @@ class DownloadFile(object):
         else:
             f = open(self.localFileName, "ab")
         req = urllib2.Request(self.url)
-        req.headers['Range'] = 'bytes=%s-%s' % (curSize, self.getUrlFileSize())
+        req.headers["Range"] = "bytes=%s-%s" % (curSize, self.getUrlFileSize())
         urllib2Obj = urllib2.urlopen(req, timeout=self.timeout)
         self.__downloadFile__(urllib2Obj, f, callBack=callBack)
 
@@ -164,9 +168,9 @@ class DownloadFile(object):
 
     def getUrlFileSize(self):
         """gets filesize of remote file from ftp or http server"""
-        if self.url_type == 'http':
+        if self.url_type == "http":
             urllib2Obj = urllib2.urlopen(self.url, timeout=self.timeout)
-            size = urllib2Obj.headers.get('content-length')
+            size = urllib2Obj.headers.get("content-length")
             return size
 
     def getLocalFileSize(self):
@@ -203,12 +207,12 @@ class DownloadFile(object):
     def resume(self, callBack=None):
         """attempts to resume file download"""
         url_type = self.getType()
-        if url_type == 'http':
+        if url_type == "http":
             self.__startHttpResume__(callBack=callBack)
 
 
 class FileDownloaderError(Exception):
-    def __init(self, message=''):
+    def __init(self, message=""):
         self.message = message
 
 

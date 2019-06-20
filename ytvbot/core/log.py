@@ -8,7 +8,8 @@ def add_logger(name, loglevel=logging.DEBUG):
         ch = logging.StreamHandler()
         ch.setLevel(loglevel)
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
         ch.setFormatter(formatter)
         logger.addHandler(ch)
 

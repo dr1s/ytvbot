@@ -7,13 +7,24 @@ from scraping.recording import Recording
 
 def import_dict_recording(rec):
     start_date = datetime.datetime.strptime(
-        rec['date'] + ":" + rec['start_time'], "%Y-%m-%d:%H:%M")
-    stop_date = datetime.datetime.strptime(rec['date'] + ":" + rec['end_time'],
-                                           "%Y-%m-%d:%H:%M")
-    recording = Recording(rec['url'], rec['show_name'], rec['links'],
-                          rec['title'], rec['information'], start_date,
-                          stop_date, rec['genre'], rec['network'],
-                          rec['episode'], rec['season'])
+        rec["date"] + ":" + rec["start_time"], "%Y-%m-%d:%H:%M"
+    )
+    stop_date = datetime.datetime.strptime(
+        rec["date"] + ":" + rec["end_time"], "%Y-%m-%d:%H:%M"
+    )
+    recording = Recording(
+        rec["url"],
+        rec["show_name"],
+        rec["links"],
+        rec["title"],
+        rec["information"],
+        start_date,
+        stop_date,
+        rec["genre"],
+        rec["network"],
+        rec["episode"],
+        rec["season"],
+    )
 
     return recording
 

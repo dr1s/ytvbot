@@ -7,9 +7,9 @@ from prettytable import PrettyTable
 
 def __write_data_to_file__(item, f):
 
-    date = item.get_attribute('date')
-    start_time = item.get_attribute('start_time')
-    end_time = item.get_attribute('end_time')
+    date = item.get_attribute("date")
+    start_time = item.get_attribute("start_time")
+    end_time = item.get_attribute("end_time")
 
     f.write("%s\n" % item.show_name)
     if item.title:
@@ -39,7 +39,7 @@ def write_information_file(item, output_file):
         item.logger.debug("information file already exists: %s" % output_file)
 
 
-def print_recordings(recordings, fields='id'):
+def print_recordings(recordings, fields="id"):
     pt = PrettyTable(fields)
     if isinstance(fields, list):
         for recording in recordings:
@@ -57,9 +57,9 @@ def write_links_to_file(recordings, output):
         if download_link:
             if download_link not in open(output).read():
                 recroding.logger.debug(
-                    'Link not found in file adding: %s' % download_link)
+                    "Link not found in file adding: %s" % download_link
+                )
                 with open(output, "a") as f:
                     f.write("%s\n" % download_link)
             else:
-                recording.logger.debug(
-                    'Link already found in file %s' % download_link)
+                recording.logger.debug("Link already found in file %s" % download_link)

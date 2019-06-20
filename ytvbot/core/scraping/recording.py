@@ -6,18 +6,20 @@ import os
 
 
 class Recording(object):
-    def __init__(self,
-                 url,
-                 show_name,
-                 links,
-                 title=None,
-                 information=None,
-                 start_date=None,
-                 stop_date=None,
-                 genre=None,
-                 network=None,
-                 season=None,
-                 episode=None):
+    def __init__(
+        self,
+        url,
+        show_name,
+        links,
+        title=None,
+        information=None,
+        start_date=None,
+        stop_date=None,
+        genre=None,
+        network=None,
+        season=None,
+        episode=None,
+    ):
         self.url = url
         self.show_name = show_name
         self.links = links
@@ -27,50 +29,50 @@ class Recording(object):
         self.stop_date = stop_date
         self.genre = genre
         self.network = network
-        self.id = url.rsplit('/', 1)[-1]
+        self.id = url.rsplit("/", 1)[-1]
         self.season = season
         self.episode = episode
 
-        self.logger = add_logger('recording %s' % self.id)
+        self.logger = add_logger("recording %s" % self.id)
 
-    def get_start_time(self, sep=':'):
+    def get_start_time(self, sep=":"):
 
         if not sep:
             sep = ":"
-        hour = self.start_date.strftime('%H')
-        minute = self.start_date.strftime('%M')
+        hour = self.start_date.strftime("%H")
+        minute = self.start_date.strftime("%M")
         time = "%s%s%s" % (hour, sep, minute)
 
         return time
 
-    def get_end_time(self, sep=':'):
+    def get_end_time(self, sep=":"):
 
         if not sep:
             sep = ":"
-        hour = self.stop_date.strftime('%H')
-        minute = self.stop_date.strftime('%M')
+        hour = self.stop_date.strftime("%H")
+        minute = self.stop_date.strftime("%M")
         time = "%s%s%s" % (hour, sep, minute)
 
         return time
 
-    def get_date(self, sep='-'):
+    def get_date(self, sep="-"):
 
         if not sep:
             sep = "-"
-        year = self.start_date.strftime('%Y')
-        month = self.start_date.strftime('%m')
-        day = self.start_date.strftime('%d')
+        year = self.start_date.strftime("%Y")
+        month = self.start_date.strftime("%m")
+        day = self.start_date.strftime("%d")
         time = "%s%s%s%s%s" % (year, sep, month, sep, day)
 
         return time
 
     def get_attribute(self, name, sep=None):
 
-        if name == 'date':
+        if name == "date":
             return self.get_date(sep)
-        elif name == 'start_time':
+        elif name == "start_time":
             return self.get_start_time(sep)
-        elif name == 'end_time':
+        elif name == "end_time":
             return self.get_end_time(sep)
         else:
             attr = getattr(self, name, None)
@@ -78,12 +80,12 @@ class Recording(object):
 
     def dict(self):
         rec_dict = self.__dict__.copy()
-        rec_dict['start_time'] = self.get_start_time()
-        rec_dict['end_time'] = self.get_end_time()
-        rec_dict['date'] = self.get_date()
-        del rec_dict['stop_date']
-        del rec_dict['start_date']
-        del rec_dict['logger']
+        rec_dict["start_time"] = self.get_start_time()
+        rec_dict["end_time"] = self.get_end_time()
+        rec_dict["date"] = self.get_date()
+        del rec_dict["stop_date"]
+        del rec_dict["start_date"]
+        del rec_dict["logger"]
         return rec_dict
 
     def list(self, fields="name"):
@@ -111,7 +113,7 @@ class Recording(object):
 
         return filename
 
-    def select_download_link(self, quality_priority='hd'):
+    def select_download_link(self, quality_priority="hd"):
 
         selected = None
         for link in self.links:
@@ -125,7 +127,7 @@ class Recording(object):
                     selected = link
 
             if selected:
-                self.logger.debug('Selecting link: %s' % selected)
+                self.logger.debug("Selecting link: %s" % selected)
                 break
 
         return selected
@@ -138,26 +140,27 @@ class Recording(object):
 
     def write_kodi_nfo(self, filename, videofile):
         self.logger.debug("Writing kodi nfo file")
-        root = etree.Element('episodedetails')
-        self.__add_sub_element__(root, self.show_name, 'title')
-        self.__add_sub_element__(root, self.title, 'showtitle')
-        self.__add_sub_element__(root, self.season, 'season')
-        self.__add_sub_element__(root, self.episode, 'episode')
-        self.__add_sub_element__(root, self.information[0], 'plot')
-        self.__add_sub_element__(root, self.genre, 'genre')
+        root = etree.Element("episodedetails")
+        self.__add_sub_element__(root, self.show_name, "title")
+        self.__add_sub_element__(root, self.title, "showtitle")
+        self.__add_sub_element__(root, self.season, "season")
+        self.__add_sub_element__(root, self.episode, "episode")
+        self.__add_sub_element__(root, self.information[0], "plot")
+        self.__add_sub_element__(root, self.genre, "genre")
 
-        self.__add_sub_element__(root, self.get_date(), 'airdate')
-        self.__add_sub_element__(root, self.id, 'id')
-        self.__add_sub_element__(root, self.network, 'studio')
-        self.__add_sub_element__(root, os.path.dirname(videofile), 'path')
-        self.__add_sub_element__(root, videofile, 'filenameandpath')
-        self.__add_sub_element__(root, videofile, 'basepath')
+        self.__add_sub_element__(root, self.get_date(), "airdate")
+        self.__add_sub_element__(root, self.id, "id")
+        self.__add_sub_element__(root, self.network, "studio")
+        self.__add_sub_element__(root, os.path.dirname(videofile), "path")
+        self.__add_sub_element__(root, videofile, "filenameandpath")
+        self.__add_sub_element__(root, videofile, "basepath")
 
-        with codecs.open(filename, 'w', 'utf-8') as f:
+        with codecs.open(filename, "w", "utf-8") as f:
             xml_data = etree.tostring(
                 root,
-                encoding='utf-8',
+                encoding="utf-8",
                 xml_declaration=True,
-                standalone='yes',
-                pretty_print=True)
+                standalone="yes",
+                pretty_print=True,
+            )
             f.write(xml_data)

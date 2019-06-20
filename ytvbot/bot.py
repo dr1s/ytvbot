@@ -49,22 +49,24 @@ def get_recordings(conf_dir, search=None, network=None):
     return recordings
 
 
-def process_recordings(ytvbot_dir,
-                       output_dir,
-                       progress_bar=None,
-                       download_files=True,
-                       search=None,
-                       network=None,
-                       json_file=None):
+def process_recordings(
+    ytvbot_dir,
+    output_dir,
+    progress_bar=None,
+    download_files=True,
+    search=None,
+    network=None,
+    json_file=None,
+):
     recordings = get_recordings(ytvbot_dir, search, network)
 
     if recordings:
-        print_recordings(recordings, [
-            'id', 'show_name', 'title', 'date', 'start_time', 'end_time',
-            'network'
-        ])
+        print_recordings(
+            recordings,
+            ["id", "show_name", "title", "date", "start_time", "end_time", "network"],
+        )
     else:
-        logger.debug('No recordings found to print')
+        logger.debug("No recordings found to print")
 
     recordings_list = list()
 
@@ -72,57 +74,55 @@ def process_recordings(ytvbot_dir,
         rec_dict = recording.dict()
         recordings_list.append(rec_dict)
     if json_file:
-        with codecs.open(json_file, 'w', 'utf-8') as f:
+        with codecs.open(json_file, "w", "utf-8") as f:
             f.write(
                 json.dumps(
-                    recordings_list,
-                    indent=2,
-                    sort_keys=True,
-                    ensure_ascii=False))
+                    recordings_list, indent=2, sort_keys=True, ensure_ascii=False
+                )
+            )
 
     if download_files and recordings:
         logger.info("Start download recordings")
         mgr = Manager(output_dir, recordings, progress_bar=progress_bar)
         mgr.start()
 
+
 def main():
 
-    parser = argparse.ArgumentParser(
-        description='Download recordings from ytv')
+    parser = argparse.ArgumentParser(description="Download recordings from ytv")
 
-    parser.add_argument('-u', '--user', help='email address', default=None)
-    parser.add_argument('-p', '--password', help='passord', default=None)
+    parser.add_argument("-u", "--user", help="email address", default=None)
+    parser.add_argument("-p", "--password", help="passord", default=None)
     parser.add_argument(
-        '-c',
-        '--configdir',
-        help='path to configuration directory',
-        default=None)
+        "-c", "--configdir", help="path to configuration directory", default=None
+    )
+    parser.add_argument("-o", "--output", help="path to output directory", default=None)
     parser.add_argument(
-        '-o', '--output', help='path to output directory', default=None)
+        "-n",
+        "--nodownload",
+        help="Don't download anything",
+        action="store_false",
+        default=True,
+    )
+    parser.add_argument("-l", "--links", help="save links in this file", default=None)
     parser.add_argument(
-        '-n',
-        '--nodownload',
-        help='Don\'t download anything',
-        action='store_false',
-        default=True)
+        "-#",
+        "--progress",
+        help="show progress bar when downloading files",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument("-s", "--search", help="search for show name", default=None)
     parser.add_argument(
-        '-l', '--links', help='save links in this file', default=None)
+        "-z", "--network", help="show results for network", default=None
+    )
     parser.add_argument(
-        '-#',
-        '--progress',
-        help='show progress bar when downloading files',
-        action='store_true',
-        default=False)
-    parser.add_argument(
-        '-s', '--search', help='search for show name', default=None)
-    parser.add_argument(
-        '-z', '--network', help='show results for network', default=None)
-    parser.add_argument(
-        '-x',
-        '--sleep',
-        help='continuesly poll for new episodes',
+        "-x",
+        "--sleep",
+        help="continuesly poll for new episodes",
         default=None,
-        type=int)
+        type=int,
+    )
     args = parser.parse_args()
 
     global email
@@ -138,7 +138,6 @@ def main():
 
     ytvbot_dir = setup_config_dir(ytvbot_dir)
 
-
     while True:
         process_recordings(
             ytvbot_dir,
@@ -146,13 +145,14 @@ def main():
             progress_bar=progress_bar,
             search=search,
             network=network,
-            json_file=args.links)
+            json_file=args.links,
+        )
         sleep_time = 60 * int(args.sleep)
-        logger.info('Checking again in %i minutes.' % args.sleep)
+        logger.info("Checking again in %i minutes." % args.sleep)
         time.sleep(sleep_time)
 
 
-logger = add_logger('ytvbot')
+logger = add_logger("ytvbot")
 
 if __name__ == "__main__":
     main()
