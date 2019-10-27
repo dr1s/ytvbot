@@ -1,6 +1,8 @@
 import textwrap
 import codecs
 import os
+from lxml import etree
+
 
 from prettytable import PrettyTable
 
@@ -63,3 +65,38 @@ def write_links_to_file(recordings, output):
                     f.write("%s\n" % download_link)
             else:
                 recording.logger.debug("Link already found in file %s" % download_link)
+
+
+def __add_sub_element__(root, element, tag):
+    if element:
+        element_tag = etree.SubElement(root, tag)
+        element_tag.text = element
+        return element_tag
+
+
+def write_kodi_nfo(rec, filename, videofile):
+    # self.logger.debug("Writing kodi nfo file")
+    root = etree.Element("episodedetails")
+    __add_sub_element__(root, rec.show_name, "title")
+    __add_sub_element__(root, rec.title, "showtitle")
+    __add_sub_element__(root, rec.season, "season")
+    __add_sub_element__(root, rec.episode, "episode")
+    __add_sub_element__(root, rec.information[0], "plot")
+    __add_sub_element__(root, rec.genre, "genre")
+
+    __add_sub_element__(root, rec.get_date(), "airdate")
+    __add_sub_element__(root, rec.id, "id")
+    __add_sub_element__(root, rec.network, "studio")
+    __add_sub_element__(root, os.path.dirname(videofile), "path")
+    __add_sub_element__(root, videofile, "filenameandpath")
+    __add_sub_element__(root, videofile, "basepath")
+
+    with codecs.open(filename, "w", "utf-8") as f:
+        xml_data = etree.tostring(
+            root,
+            encoding="utf-8",
+            xml_declaration=True,
+            standalone="yes",
+            pretty_print=True,
+        )
+        f.write(xml_data)

@@ -104,12 +104,22 @@ class Recording(object):
     def write_information_file(self, output_file):
         exporter.write_information_file(self, output_file)
 
-    def format_output_filename(self, fname=None):
+    def write_kodi_nfo(self, filename, videofile):
+        exporter.write_kodi_nfo(self, filename, videofile)
+
+    def format_output_filename(self, fname=None, path=None):
         if not fname:
+            # attrs = ['show_name', 'title', 'date', 'start_time', 'network']
+            # for a in attrs:
+            #    if self.dict()[a]:
+            #        fname += "\{{0}\}".format(a)
             fname = "{show_name}-{title}-{date}-{start_time}-{network}"
         extension = "mp4"
         fname_tmp = "{0}.{1}".format(fname, extension)
         filename = fname_tmp.format(**self.dict())
+
+        if path:
+            filename = os.path.join(path, filename)
 
         return filename
 
@@ -131,36 +141,3 @@ class Recording(object):
                 break
 
         return selected
-
-    def __add_sub_element__(self, root, element, tag):
-        if element:
-            element_tag = etree.SubElement(root, tag)
-            element_tag.text = element
-            return element_tag
-
-    def write_kodi_nfo(self, filename, videofile):
-        self.logger.debug("Writing kodi nfo file")
-        root = etree.Element("episodedetails")
-        self.__add_sub_element__(root, self.show_name, "title")
-        self.__add_sub_element__(root, self.title, "showtitle")
-        self.__add_sub_element__(root, self.season, "season")
-        self.__add_sub_element__(root, self.episode, "episode")
-        self.__add_sub_element__(root, self.information[0], "plot")
-        self.__add_sub_element__(root, self.genre, "genre")
-
-        self.__add_sub_element__(root, self.get_date(), "airdate")
-        self.__add_sub_element__(root, self.id, "id")
-        self.__add_sub_element__(root, self.network, "studio")
-        self.__add_sub_element__(root, os.path.dirname(videofile), "path")
-        self.__add_sub_element__(root, videofile, "filenameandpath")
-        self.__add_sub_element__(root, videofile, "basepath")
-
-        with codecs.open(filename, "w", "utf-8") as f:
-            xml_data = etree.tostring(
-                root,
-                encoding="utf-8",
-                xml_declaration=True,
-                standalone="yes",
-                pretty_print=True,
-            )
-            f.write(xml_data)

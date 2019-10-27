@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import os
 import datetime
+import time
 
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support import expected_conditions as EC
 
 from recording import Recording
 from ..log import add_logger
@@ -72,8 +77,8 @@ class Scraper:
         self.logger.debug("Trying to find the video element")
         stream_video = self.browser.find_element_by_id("youtv-video")
         download_url = stream_video.get_attribute("src")
-        self.logger.debug(url_tmp)
-        self.logger.debug(download_url)
+        # self.logger.debug(url_tmp)
+        # self.logger.debug(download_url)
         return download_url
 
     def get_recording_links(self, url):
@@ -237,20 +242,23 @@ class Scraper:
 
         return network
 
-    def get_recording_from_url(self, url):
+    def get_recording_from_url(self, url, get_links=True):
 
         if not self.browser.current_url == url:
             self.browser.get(url)
 
         links = self.get_recording_links(url)
-        if len(links) < 1:
-            links_new = self.get_stream_url(url)
-            if links_new:
-                links.append(links_new)
-            self.browser.get(url)
+        if get_links:
             if len(links) < 1:
-                self.logger.debug("No downloadable link found for %s" % url)
-                return None
+                links_new = self.get_stream_url(url)
+                if links_new:
+                    links.append(links_new)
+                self.browser.get(url)
+                if len(links) < 1:
+                    self.logger.debug("No downloadable link found for %s" % url)
+                    return None
+        else:
+            links = None
         name = self.get_recording_showname(url)
         title = self.get_recording_title(url)
         information = self.get_recording_information(url)
@@ -275,7 +283,7 @@ class Scraper:
         )
         return recording
 
-    def get_recordings(self, search=None, network=None):
+    def get_recordings(self, search=None, network=None, get_links=True):
         recordings = []
         recordings_urls = []
 
@@ -286,8 +294,8 @@ class Scraper:
 
         self.logger.debug("recording_urls: %s" % recordings_urls)
         for url in recordings_urls:
-            self.logger.debug("Getting recordings from url: %s" % url)
-            rec = self.get_recording_from_url(url)
+            self.logger.debug("Getting recording from url: %s" % url)
+            rec = self.get_recording_from_url(url, get_links)
             if rec:
                 recordings.append(rec)
 
@@ -301,3 +309,34 @@ class Scraper:
             return rec_nw
         else:
             return recordings
+
+    def delete_recordings(self, recordings, output_dir):
+        for r in recordings:
+            filename = r.format_output_filename()
+            output_file = None
+            if output_dir:
+                if r.show_name:
+                    output_file = os.path.join(output_dir, r.show_name, filename)
+                else:
+                    output_file = os.path.join(output_dir, filename)
+            else:
+                if recording.show_name:
+                    output_file = os.path.join(r.show_name, filename)
+
+            if os.path.isfile(output_file):
+                self.logger.debug("Recording file found: %s" % output_file)
+                if not self.browser.current_url == r.url:
+                    self.logger.debug("Loading recording url: %s" % r.url)
+                    self.browser.get(r.url)
+                self.browser.find_element_by_class_name("delete-button").click()
+                try:
+                    self.logger.debug("Accepting confirmation dialog")
+                    WebDriverWait(self.browser, 5).until(
+                        EC.alert_is_present(), "Waiting for alert timed out"
+                    )
+                    alert = self.browser.switch_to.alert
+                    alert.accept()
+                except TimeoutException:
+                    self.logger.debug("Can't confirm deletion")
+            time.sleep(10)
+        self.browser.get("https://youtv.de/")
