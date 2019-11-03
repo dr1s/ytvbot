@@ -135,7 +135,8 @@ class DownloadFile(object):
                     pbar.update(8192)
             if callBack:
                 callBack(cursize=self.cur)
-        pbar.close()
+        if self.progress_bar:
+            pbar.close()
 
     def __retry__(self):
         """auto-resumes up to self.retries"""
