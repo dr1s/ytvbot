@@ -61,7 +61,6 @@ def delete_recordings(conf_dir, output_dir, search=None, network=None):
     except (KeyboardInterrupt, WebDriverException):
         if br:
             br.destroy()
-    scraper.delete_recordings(recordings, output_dir)
 
 
 def process_recordings(
@@ -102,8 +101,7 @@ def process_recordings(
         mgr = Manager(output_dir, recordings, progress_bar=progress_bar)
         mgr.start()
 
-    if delete:
-        delete_recordings(ytvbot_dir, output_dir, search, network)
+    delete_recordings(ytvbot_dir, output_dir, search, network)
 
 
 def main():
@@ -147,7 +145,7 @@ def main():
         "--delete",
         help="delete recordings after download",
         default=False,
-        action=store_true,
+        action="store_true",
     )
     args = parser.parse_args()
 

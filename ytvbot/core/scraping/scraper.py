@@ -320,7 +320,7 @@ class Scraper:
                 else:
                     output_file = os.path.join(output_dir, filename)
             else:
-                if recording.show_name:
+                if r.show_name:
                     output_file = os.path.join(r.show_name, filename)
 
             if os.path.isfile(output_file):
@@ -339,4 +339,3 @@ class Scraper:
                 except TimeoutException:
                     self.logger.debug("Can't confirm deletion")
             time.sleep(10)
-        self.browser.get("https://youtv.de/")
