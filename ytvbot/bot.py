@@ -27,6 +27,7 @@ def usage():
     print(" -c | --config-dir [config-dir]: path to configuration directory")
     print(" -o | --output [output_dir]: output directory")
     print(" -h | --help: shows this message")
+    print(" -d | --delete: delete all recordings after download")
     print(" -n | --no-download: Don't download anything")
     print(" -l | --links [output_file]: Save links in this file")
     print(" -# | --progress: show progress bar when downloading files")
@@ -49,6 +50,19 @@ def get_recordings(conf_dir, search=None, network=None):
     return recordings
 
 
+def delete_recordings(conf_dir, output_dir, search=None, network=None):
+    br = Browser(config_dir=conf_dir)
+    try:
+        br.login(email, password)
+        scraper = Scraper(br.browser)
+        recordings = scraper.get_recordings(search, network, False)
+        scraper.delete_recordings(recordings, output_dir)
+        br.destroy()
+    except (KeyboardInterrupt, WebDriverException):
+        if br:
+            br.destroy()
+
+
 def process_recordings(
     ytvbot_dir,
     output_dir,
@@ -57,6 +71,7 @@ def process_recordings(
     search=None,
     network=None,
     json_file=None,
+    delete=False,
 ):
     recordings = get_recordings(ytvbot_dir, search, network)
 
@@ -85,6 +100,8 @@ def process_recordings(
         logger.info("Start download recordings")
         mgr = Manager(output_dir, recordings, progress_bar=progress_bar)
         mgr.start()
+
+    delete_recordings(ytvbot_dir, output_dir, search, network)
 
 
 def main():
@@ -123,6 +140,13 @@ def main():
         default=None,
         type=int,
     )
+    parser.add_argument(
+        "-d",
+        "--delete",
+        help="delete recordings after download",
+        default=False,
+        action="store_true",
+    )
     args = parser.parse_args()
 
     global email
@@ -135,7 +159,7 @@ def main():
     progress_bar = args.progress
     search = args.search
     network = args.network
-
+    delete = args.delete
     ytvbot_dir = setup_config_dir(ytvbot_dir)
 
     while True:
@@ -146,6 +170,7 @@ def main():
             search=search,
             network=network,
             json_file=args.links,
+            delete=delete,
         )
         sleep_time = 60 * int(args.sleep)
         logger.info("Checking again in %i minutes." % args.sleep)

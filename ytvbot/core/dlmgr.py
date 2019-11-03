@@ -18,8 +18,9 @@ class Manager(object):
             output_file = filename
             if self.output_dir:
                 if recording.show_name:
-                    output_tmp = os.path.join(self.output_dir, recording.show_name)
-                    output_file = os.path.join(output_tmp, filename)
+                    output_file = os.path.join(
+                        self.output_dir, recording.show_name, filename
+                    )
                 else:
                     output_file = os.path.join(self.output_dir, filename)
             else:
