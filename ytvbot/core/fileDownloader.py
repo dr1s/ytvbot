@@ -1,14 +1,14 @@
 """Downloads files from http or ftp locations.
 
 Copyright Joshua Banton"""
-from __future__ import division
+
 import os
-import urllib2
-import urlparse
-import urllib
+import urllib.request, urllib.error, urllib.parse
+import urllib.parse
+import urllib.request, urllib.parse, urllib.error
 import sys
 import socket
-from log import add_logger
+from .log import add_logger
 
 from tqdm import tqdm
 
@@ -71,7 +71,7 @@ class DownloadFile(object):
         if not self.fast_start:
             try:
                 self.urlFilesize = self.getUrlFileSize()
-            except urllib2.HTTPError:
+            except urllib.error.HTTPError:
                 self.urlFilesize = None
         else:
             self.urlFilesize = None
@@ -93,9 +93,9 @@ class DownloadFile(object):
             # Progress bar only works if we have the fileSize
             curSize = self.getLocalFileSize()
             if self.progress_bar:
-                if self.fileSize > sys.maxint:
+                if self.fileSize > sys.maxsize:
                     pbar = tqdm(
-                        total=long(self.fileSize) // 8192,
+                        total=int(self.fileSize) // 8192,
                         unit_scale=True,
                         initial=curSize // 8192,
                         dynamic_ncols=True,
@@ -120,7 +120,7 @@ class DownloadFile(object):
             try:
                 data = urlObj.read(8192)
             except (socket.timeout, socket.error) as t:
-                print("caught ", t)
+                print(("caught ", t))
                 self.__retry__()
                 break
             if not data:
@@ -129,7 +129,7 @@ class DownloadFile(object):
             fileObj.write(data)
             self.cur += 8192
             if pbar:
-                if self.fileSize > sys.maxint:
+                if self.fileSize > sys.maxsize:
                     pbar.update(1)
                 else:
                     pbar.update(8192)
@@ -158,19 +158,19 @@ class DownloadFile(object):
             f = open(self.localFileName, "wb")
         else:
             f = open(self.localFileName, "ab")
-        req = urllib2.Request(self.url)
+        req = urllib.request.Request(self.url)
         req.headers["Range"] = "bytes=%s-%s" % (curSize, self.getUrlFileSize())
-        urllib2Obj = urllib2.urlopen(req, timeout=self.timeout)
+        urllib2Obj = urllib.request.urlopen(req, timeout=self.timeout)
         self.__downloadFile__(urllib2Obj, f, callBack=callBack)
 
     def getUrlFilename(self, url):
         """returns filename from url"""
-        return urllib.unquote(os.path.basename(url))
+        return urllib.parse.unquote(os.path.basename(url))
 
     def getUrlFileSize(self):
         """gets filesize of remote file from ftp or http server"""
         if self.url_type == "http":
-            urllib2Obj = urllib2.urlopen(self.url, timeout=self.timeout)
+            urllib2Obj = urllib.request.urlopen(self.url, timeout=self.timeout)
             size = urllib2Obj.headers.get("content-length")
             return size
 
@@ -181,14 +181,14 @@ class DownloadFile(object):
 
     def getType(self):
         """returns protocol of url (ftp or http)"""
-        url_type = urlparse.urlparse(self.url).scheme
+        url_type = urllib.parse.urlparse(self.url).scheme
         return url_type
 
     def checkExists(self):
         """Checks to see if the file in the url in self.url exists"""
         try:
-            urllib2.urlopen(self.url, timeout=self.timeout)
-        except urllib2.HTTPError:
+            urllib.request.urlopen(self.url, timeout=self.timeout)
+        except urllib.error.HTTPError:
             return False
         return True
 
@@ -198,9 +198,9 @@ class DownloadFile(object):
         self.cur = 0
         f = open(self.localFileName, "wb")
         try:
-            urllib2Obj = urllib2.urlopen(self.url, timeout=self.timeout)
+            urllib2Obj = urllib.request.urlopen(self.url, timeout=self.timeout)
             self.__downloadFile__(urllib2Obj, f, callBack=callBack)
-        except urllib2.HTTPError:
+        except urllib.error.HTTPError:
             self.logger.debug("Can't download file: %s" % self.url)
 
         return True

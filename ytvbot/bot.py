@@ -137,7 +137,7 @@ def main():
         "-x",
         "--sleep",
         help="continuesly poll for new episodes",
-        default=None,
+        default=60,
         type=int,
     )
     parser.add_argument(

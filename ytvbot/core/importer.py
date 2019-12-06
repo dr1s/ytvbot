@@ -2,7 +2,7 @@ import codecs
 import json
 import datetime
 
-from scraping.recording import Recording
+from .scraping.recording import Recording
 
 
 def import_dict_recording(rec):

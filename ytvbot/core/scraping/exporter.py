@@ -99,4 +99,4 @@ def write_kodi_nfo(rec, filename, videofile):
             standalone="yes",
             pretty_print=True,
         )
-        f.write(xml_data)
+        f.write(xml_data.decode("utf-8"))

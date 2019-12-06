@@ -17,13 +17,14 @@ from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 from selenium.common.exceptions import TimeoutException
 
 from ..log import add_logger
+import importlib
 
 
 class Browser:
     def __init__(self, timeout=20, config_dir=None):
 
-        reload(sys)
-        sys.setdefaultencoding("utf8")
+        importlib.reload(sys)
+        #sys.setdefaultencoding("utf8")
 
         self.logger = add_logger("browser")
 

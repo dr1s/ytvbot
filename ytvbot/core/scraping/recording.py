@@ -1,5 +1,5 @@
 from ..log import add_logger
-import exporter
+from . import exporter
 from lxml import etree
 import codecs
 import os

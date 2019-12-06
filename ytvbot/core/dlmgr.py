@@ -1,8 +1,8 @@
-import fileDownloader
+from . import fileDownloader
 import os
-from log import add_logger
-from utils import check_dir
-from urllib2 import HTTPError
+from .log import add_logger
+from .utils import check_dir
+from urllib.error import HTTPError
 
 
 class Manager(object):
