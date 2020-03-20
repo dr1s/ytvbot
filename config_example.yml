@@ -1,0 +1,7 @@
+---
+
+accounts:
+  - email: account1@example.com
+    password: examplepassword
+  - email: account2@example.com
+    password: examplepass

@@ -14,6 +14,7 @@ setup(
         "prettytable",
         "lxml",
         "tqdm",
+        "pyyaml"
     ],
     packages=find_packages(),
     include_package_data=True,

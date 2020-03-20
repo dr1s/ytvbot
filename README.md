@@ -29,8 +29,6 @@ Download recordings form youtv.de
     ytvbot --help
 
     usage: ytvbot [arguments]
-    -u | --user [email]: email adress of the account
-    -p | --password [password]: password ouf the account
     -c | --config-dir [config-dir]: path to configuration directory
     -o | --output [output_dir]: output directory
     -h | --help: shows this message

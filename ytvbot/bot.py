@@ -3,6 +3,7 @@
 
 import os
 import json
+import yaml
 import time
 import codecs
 import argparse
@@ -16,14 +17,9 @@ from core.dlmgr import Manager
 from core.utils import setup_config_dir
 from selenium.common.exceptions import WebDriverException
 
-email = None
-password = None
-
 
 def usage():
     print("usage: ytvbot [arguments]")
-    print(" -u | --user [email]: email adress of the account")
-    print(" -p | --password [password]: password ouf the account ")
     print(" -c | --config-dir [config-dir]: path to configuration directory")
     print(" -o | --output [output_dir]: output directory")
     print(" -h | --help: shows this message")
@@ -36,7 +32,7 @@ def usage():
     print(" -z | --network [network_name]: show results for network")
 
 
-def get_recordings(conf_dir, search=None, network=None):
+def get_recordings(email, password, conf_dir, search=None, network=None):
     recordings = []
     br = Browser(config_dir=conf_dir)
     try:
@@ -50,7 +46,7 @@ def get_recordings(conf_dir, search=None, network=None):
     return recordings
 
 
-def delete_recordings(conf_dir, output_dir, search=None, network=None):
+def delete_recordings(email, password, conf_dir, output_dir, search=None, network=None):
     br = Browser(config_dir=conf_dir)
     try:
         br.login(email, password)
@@ -64,6 +60,8 @@ def delete_recordings(conf_dir, output_dir, search=None, network=None):
 
 
 def process_recordings(
+    email,
+    password,
     ytvbot_dir,
     output_dir,
     progress_bar=None,
@@ -73,7 +71,7 @@ def process_recordings(
     json_file=None,
     delete=False,
 ):
-    recordings = get_recordings(ytvbot_dir, search, network)
+    recordings = get_recordings(email, password, ytvbot_dir, search, network)
 
     if recordings:
         print_recordings(
@@ -101,15 +99,13 @@ def process_recordings(
         mgr = Manager(output_dir, recordings, progress_bar=progress_bar)
         mgr.start()
 
-    delete_recordings(ytvbot_dir, output_dir, search, network)
+    delete_recordings(email, password, ytvbot_dir, output_dir, search, network)
 
 
 def main():
 
     parser = argparse.ArgumentParser(description="Download recordings from ytv")
 
-    parser.add_argument("-u", "--user", help="email address", default=None)
-    parser.add_argument("-p", "--password", help="passord", default=None)
     parser.add_argument(
         "-c", "--configdir", help="path to configuration directory", default=None
     )
@@ -149,10 +145,6 @@ def main():
     )
     args = parser.parse_args()
 
-    global email
-    email = args.user
-    global password
-    password = args.password
     ytvbot_dir = args.configdir
     output_dir = args.output
     download_files = args.nodownload
@@ -162,16 +154,23 @@ def main():
     delete = args.delete
     ytvbot_dir = setup_config_dir(ytvbot_dir)
 
+    config = None 
+    with codecs.open(os.path.join(ytvbot_dir, "config.yml"), 'r', "utf-8") as stream:
+        config = yaml.load(stream)
+    
     while True:
-        process_recordings(
-            ytvbot_dir,
-            output_dir,
-            progress_bar=progress_bar,
-            search=search,
-            network=network,
-            json_file=args.links,
-            delete=delete,
-        )
+        for a in config['accounts']:
+            process_recordings(
+                a['email'],
+                a['password'],
+                ytvbot_dir,
+                output_dir,
+                progress_bar=progress_bar,
+                search=search,
+                network=network,
+                json_file=args.links,
+                delete=delete,
+            )
         sleep_time = 60 * int(args.sleep)
         logger.info("Checking again in %i minutes." % args.sleep)
         time.sleep(sleep_time)
