@@ -37,8 +37,8 @@ class Browser:
 
         # Disable images to speed up loading times
         firefox_profile = FirefoxProfile()
-        firefox_profile.set_preference("permissions.default.image", 2)
-        firefox_profile.set_preference("permissions.default.stylesheet", 2)
+        #firefox_profile.set_preference("permissions.default.image", 2)
+        #firefox_profile.set_preference("permissions.default.stylesheet", 2)
         self.browser = webdriver.Firefox(firefox_profile)
 
         self.logged_in = False
@@ -58,7 +58,7 @@ class Browser:
     def __check_logged_in__(self):
         try:
             element_present = EC.presence_of_element_located(
-                (By.LINK_TEXT, "Mein Account")
+                (By.XPATH, '//a[@href="/benutzer/einstellungen"]' )
             )
             WebDriverWait(self.browser, self.timeout).until(element_present)
             self.logger.info("Logged in.")
