@@ -85,6 +85,9 @@ class Scraper:
 
         self.logger.info("Getting links from: %s" % url)
 
+        self.browser.find_element_by_class_name("download-button").click()
+
+
         downloads = self.browser.find_elements_by_partial_link_text("Definition")
         downloads += self.browser.find_elements_by_partial_link_text("Qualität")
 
