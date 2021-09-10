@@ -116,7 +116,7 @@ class Recording(object):
             fname = "{show_name}-{title}-{date}-{start_time}-{network}"
         extension = "mp4"
         fname_tmp = "{0}.{1}".format(fname, extension)
-        filename = fname_tmp.format(**self.dict())
+        filename = fname_tmp.format(**self.dict()).replace('/','_')
 
         if path:
             filename = os.path.join(path, filename)
