@@ -98,8 +98,9 @@ def process_recordings(
         logger.info("Start download recordings")
         mgr = Manager(output_dir, recordings, progress_bar=progress_bar)
         mgr.start()
-
-    delete_recordings(email, password, ytvbot_dir, output_dir, search, network)
+        
+    if delete:
+        delete_recordings(email, password, ytvbot_dir, output_dir, search, network)
 
 
 def main():
