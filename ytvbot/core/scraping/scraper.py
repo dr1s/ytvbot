@@ -42,6 +42,7 @@ class Scraper:
         self.logger.info("Getting available recordings")
         self.browser.get(self.recorder_url)
         # Scroll to bottom to load all recordings
+        time.sleep(5)
         self.browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
     def get_available_recordings(self, name=None):
