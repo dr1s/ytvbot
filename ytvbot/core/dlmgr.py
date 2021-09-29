@@ -19,13 +19,13 @@ class Manager(object):
             if self.output_dir:
                 if recording.show_name:
                     output_file = os.path.join(
-                        self.output_dir, recording.show_name, filename
+                        self.output_dir, recording.show_name.replace('/','_'), filename
                     )
                 else:
                     output_file = os.path.join(self.output_dir, filename)
             else:
                 if recording.show_name:
-                    output_file = os.path.join(recording.show_name, filename)
+                    output_file = os.path.join(recording.show_name.replace('/','_'), filename)
 
             out_dir = os.path.dirname(output_file)
             check_dir(str(out_dir))
